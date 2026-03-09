@@ -15,7 +15,7 @@
  */
 
 // Mapping karakter ke Braille (6-bit pattern)
-// Format: [top-left, top-middle, top-right, bottom-left, bottom-middle, bottom-right]
+// Format: [top-left, middle-left, bottom-left, top-right, middle-right, bottom-right]
 const BRAILLE_MAP = {
   'a': [1, 0, 0, 0, 0, 0],
   'b': [1, 1, 0, 0, 0, 0],
