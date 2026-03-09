@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <!-- Fallback: tetap kelihatan kalau Tailwind belum jalan -->
   <style>
-    body { background: #faf7f2; color: #1c1917; margin: 0; min-height: 100vh; font-family: 'Figtree', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: #d4f7d4; color: #1c1917; margin: 0; min-height: 100vh; font-family: 'Figtree', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
   </style>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -48,63 +48,45 @@
     .mode-both-deafblind .both-deafblind-hide { display: none !important; }
   </style>
 </head>
-<body id="appBody" class="min-h-screen bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 font-sans text-base antialiased transition-colors">
-  <div class="max-w-md mx-auto min-h-screen flex flex-col px-4 pb-10 pt-6">
+<body id="appBody" class="min-h-screen bg-green-100 dark:bg-stone-900 text-stone-900 dark:text-stone-100 font-sans text-base antialiased transition-colors">
+  <div class="max-w-md mx-auto min-h-screen flex flex-col px-4 pb-10 pt-6 simple-layout">
     <!-- Header -->
     <header class="text-center mb-4 relative">
-      <button type="button" id="darkModeBtn" onclick="toggleDarkMode()" class="absolute top-0 right-0 z-10 p-2 rounded-lg hover:bg-stone-200 dark:hover:bg-stone-700 transition cursor-pointer" aria-label="Toggle dark mode" title="Ganti tema gelap/terang">
+      <h1 class="font-display text-4xl text-stone-900 dark:text-stone-100 italic mb-2">Kaito Whale</h1>
+      <p class="text-stone-500 dark:text-stone-400 text-base mb-2">Komunikasi getaran untuk semua usia</p>
+      <button type="button" id="darkModeBtn" onclick="toggleDarkMode()" class="p-3 rounded-xl bg-stone-200 dark:bg-stone-700 text-lg mt-2" aria-label="Toggle dark mode" title="Ganti tema gelap/terang">
         <span id="darkModeIconMoon" class="dark:hidden">🌙</span>
         <span id="darkModeIconSun" class="hidden dark:inline">☀️</span>
       </button>
-      <h1 class="font-display text-3xl text-stone-900 dark:text-stone-100 italic mb-1">Kaito Whale</h1>
-      <p class="text-stone-500 dark:text-stone-400 text-sm">Komunikasi melalui getaran untuk tuli-buta</p>
       <label class="simple-only mt-3 flex items-center justify-center gap-2 cursor-pointer text-sm text-stone-600 dark:text-stone-400">
-        <input type="checkbox" id="simpleViewCheckbox" class="rounded border-stone-300 dark:border-stone-600">
-        <span>Tampilan sederhana (untuk penerima)</span>
+        <!-- Removed: simple/advanced toggle for universal layout -->
       </label>
     </header>
 
     <main class="flex-1 flex flex-col gap-4">
       <!-- Error Message -->
-      <div id="errorMessage" class="hidden bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 text-sm text-red-800 dark:text-red-200" role="alert"></div>
+      <div id="errorMessage" class="hidden bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 text-lg text-red-800 dark:text-red-200" role="alert"></div>
 
       <!-- Connection -->
       <section class="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl overflow-hidden shadow-sm">
         <div class="p-4 border-b border-stone-100 dark:border-stone-700 flex items-center gap-2">
-          <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-stone-300 shrink-0" aria-hidden="true"></span>
-          <span id="statusText" class="font-semibold text-stone-700 dark:text-stone-300 text-sm" aria-live="polite">Terputus</span>
-          <button id="retryBtn" class="hidden ml-auto text-xs text-emerald-600 dark:text-emerald-400 hover:underline">Coba lagi</button>
+          <span id="statusDot" class="w-4 h-4 rounded-full bg-stone-300 shrink-0" aria-hidden="true"></span>
+          <span id="statusText" class="font-bold text-stone-700 dark:text-stone-300 text-lg" aria-live="polite">Terputus</span>
+          <button id="retryBtn" class="hidden ml-auto text-base text-emerald-600 dark:text-emerald-400 hover:underline">Coba lagi</button>
         </div>
         <div id="connectionForm" class="p-4 space-y-3">
-          <div class="advanced-only">
-            <label for="serverUrl" class="block text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-1">URL Server</label>
+          <div>
+            <label for="serverUrl" class="block text-lg font-semibold text-stone-500 dark:text-stone-400 mb-2">URL Server</label>
             <input type="text" id="serverUrl" placeholder="Kosongkan = server ini" autocomplete="off"
-              class="w-full px-3 py-2.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 dark:focus:border-emerald-500 text-sm">
+              class="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 dark:focus:border-emerald-500 text-lg">
           </div>
           <div>
-            <label for="userName" class="block text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-1">Nama (opsional)</label>
+            <label for="userName" class="block text-lg font-semibold text-stone-500 dark:text-stone-400 mb-2">Nama (opsional)</label>
             <input type="text" id="userName" placeholder="…" autocomplete="off"
-              class="w-full px-3 py-2.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 dark:focus:border-emerald-500 text-sm">
-          </div>
-          <!-- <div class="advanced-only">
-            <label for="senderRole" class="block text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-1">Saya sebagai</label>
-            <select id="senderRole" class="w-full px-3 py-2.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-sm">
-              <option value="">— Pilih —</option>
-              <option value="ibu">Ibu</option>
-              <option value="ayah">Ayah</option>
-              <option value="pengasuh">Pengasuh</option>
-              <option value="teman">Teman</option>
-            </select>
-          </div> -->
-          <div class="advanced-only">
-            <label for="usageMode" class="block text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-1">Mode penggunaan</label>
-            <select id="usageMode" class="w-full px-3 py-2.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-sm">
-              <option value="standard">Standar (saya bisa lihat/dengar)</option>
-              <option value="bothDeafBlind">Kedua tuli-buta (rekam: tap mulai, tap stop)</option>
-            </select>
+              class="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 dark:focus:border-emerald-500 text-lg">
           </div>
           <button type="button" id="connectBtn"
-            class="w-full mt-2 py-3.5 rounded-xl bg-emerald-700 dark:bg-emerald-600 text-white font-semibold text-base hover:bg-emerald-600 dark:hover:bg-emerald-500 active:scale-[0.99] transition min-h-[48px]"
+            class="w-full mt-4 py-4 rounded-2xl bg-emerald-700 dark:bg-emerald-600 text-white font-bold text-xl hover:bg-emerald-600 dark:hover:bg-emerald-500 active:scale-[0.99] transition min-h-[56px]"
             aria-label="Hubungkan ke server">
             Hubungkan
           </button>
@@ -118,10 +100,10 @@
       <!-- Messages -->
       <section id="messagesSection" class="hidden bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl overflow-hidden shadow-sm">
         <div class="p-3 border-b border-stone-100 dark:border-stone-700">
-          <h2 class="font-semibold text-stone-700 dark:text-stone-300 text-sm">Pesan</h2>
+          <h2 class="font-bold text-stone-700 dark:text-stone-300 text-lg">Pesan</h2>
         </div>
         <div id="messagesList" class="p-3 max-h-56 overflow-y-auto space-y-2" role="log" aria-live="polite" aria-label="Daftar pesan">
-          <p id="emptyMessages" class="text-stone-400 dark:text-stone-500 text-sm text-center py-4">Belum ada pesan. Kirim yang pertama.</p>
+          <p id="emptyMessages" class="text-stone-400 dark:text-stone-500 text-lg text-center py-6">Belum ada pesan. Kirim yang pertama.</p>
         </div>
         <div id="readReceiptRow" class="hidden px-3 pb-2 flex gap-2 flex-wrap">
           <button type="button" id="replayVibrationBtn" class="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl border-2 border-emerald-600 dark:border-emerald-500 text-emerald-700 dark:text-emerald-400 font-semibold text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 active:scale-[0.99] transition" aria-label="Ulangi getaran pesan terakhir">🔁 Ulangi getaran</button>
@@ -132,70 +114,49 @@
 
       <!-- Frasa cepat + Darurat (muncul setelah terhubung) -->
       <!-- <section id="quickSection" class="hidden bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl p-4">
-        <h3 class="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-2">Frasa cepat</h3>
+        <h3 class="text-lg font-bold text-stone-500 dark:text-stone-400 mb-4">Frasa cepat</h3>
         <div id="quickPhrasesWrap" class="flex flex-nowrap gap-2 mb-3 overflow-x-auto pb-1 -mx-1 scrollbar-thin" style="scrollbar-width: thin;"></div>
         <button type="button" id="emergencyBtn" class="w-full min-h-[48px] py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold text-base border border-red-700 dark:border-red-500 active:scale-[0.99] transition" aria-label="Darurat butuh bantuan">🚨 Darurat / Butuh bantuan</button>
+        <button type="button" id="emergencyBtn" class="w-full min-h-[56px] py-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-xl border border-red-700 dark:border-red-500 active:scale-[0.99] transition" aria-label="Darurat butuh bantuan">🚨 Darurat / Butuh bantuan</button>
       </section> -->
 
       <!-- Input -->
       <section class="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl overflow-hidden shadow-sm">
-        <div class="p-4 space-y-3">
+        <div class="p-4 space-y-4">
           <!-- Mode standar: ketik + mood + preview Braille -->
           <div class="both-deafblind-hide">
             <label for="messageInput" class="simple-only block text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-1">Pesan</label>
-            <!-- <div class="flex flex-wrap items-center gap-2 mb-2 advanced-only">
-              <label for="messageInput" class="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide">Pesan</label>
-              <select id="moodSelect" class="ml-auto text-xs rounded border border-stone-200 dark:border-stone-600 bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 px-2 py-1" title="Penerima merasakan pola getaran singkat dulu (suasana) sebelum isi pesan">
-                <option value="">— Pola suasana (opsional) —</option>
-                <option value="senang">😊 Senang</option>
-                <option value="sedih">😢 Sedih</option>
-                <option value="marah">😠 Marah</option>
-                <option value="tenang">😌 Tenang</option>
-                <option value="sayang">❤️ Sayang</option>
-              </select>
-            </div> -->
+            <!-- Removed mood select for simplicity -->
             <textarea id="messageInput" rows="3" placeholder="Ketik di sini… (Ctrl+Enter untuk kirim)"
-              class="w-full px-3 py-2.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 dark:focus:border-emerald-500 text-sm resize-y min-h-[80px]"
+              class="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 dark:focus:border-emerald-500 text-lg resize-y min-h-[80px]"
               maxlength="1000" aria-label="Input pesan"></textarea>
             <div class="flex justify-between items-center mt-1">
               <span id="longMessageWarning" class="hidden text-xs text-amber-600 dark:text-amber-400 advanced-only">Pesan panjang — penerima mungkin butuh waktu.</span>
               <span class="text-xs text-stone-400 dark:text-stone-500 ml-auto"><span id="charCount">0</span>/1000</span>
+                        <span class="text-lg text-stone-400 dark:text-stone-500 ml-auto"><span id="charCount">0</span>/1000</span>
             </div>
             <div id="previewSection" class="hidden pt-2 border-t border-stone-100 dark:border-stone-700 advanced-only">
               <span class="text-xs text-stone-500 dark:text-stone-400">Preview Braille</span>
               <p id="patternPreview" class="mt-1 text-sm font-mono text-emerald-700 dark:text-emerald-400 break-all"></p>
             </div>
           </div>
-          <!-- Mode kedua tuli-buta: hanya preview (getaran) + Rekam + Putar getaran + Hapus + Kirim -->
-          <div class="both-deafblind-only space-y-3">
-            <div>
-              <p class="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-1">Preview sebelum kirim (rasakan getaran)</p>
-              <div id="sendPreviewText" class="min-h-[60px] px-3 py-2.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-700/50 text-stone-900 dark:text-stone-100 text-sm break-words" aria-live="polite">— Rekam suara, teks akan muncul di sini —</div>
-            </div>
-            <div class="flex gap-2 flex-wrap">
-              <button type="button" id="voiceBtnDeafBlind" class="flex-1 min-w-[120px] min-h-[48px] py-3.5 rounded-xl border-2 border-emerald-600 dark:border-emerald-500 text-emerald-700 dark:text-emerald-400 font-semibold text-base hover:bg-emerald-50 dark:hover:bg-emerald-900/20 active:scale-[0.99] transition" aria-label="Rekam suara. Sentuh untuk mulai, sentuh lagi untuk stop.">🎤 Rekam</button>
-              <button type="button" id="playPreviewVibrationBtn" disabled class="flex-1 min-w-[120px] min-h-[48px] py-3.5 rounded-xl border-2 border-amber-500 dark:border-amber-400 text-amber-700 dark:text-amber-300 font-semibold text-base hover:bg-amber-50 dark:hover:bg-amber-900/20 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.99] transition" aria-label="Rasakan getaran preview sebelum kirim">🔁 Putar getaran</button>
-              <button type="button" id="clearPreviewBtn" class="min-h-[48px] py-3.5 px-4 rounded-xl border border-stone-300 dark:border-stone-600 text-stone-600 dark:text-stone-400 font-semibold text-sm hover:bg-stone-100 dark:hover:bg-stone-700 active:scale-[0.99] transition" aria-label="Hapus preview">Hapus</button>
-              <button type="button" id="sendBtnDeafBlind" disabled class="flex-1 min-w-[120px] min-h-[48px] py-3.5 rounded-xl bg-emerald-700 dark:bg-emerald-600 text-white font-semibold text-base hover:bg-emerald-600 dark:hover:bg-emerald-500 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.99] transition" aria-label="Kirim pesan">Kirim</button>
-            </div>
-            <!-- Input Braille 6 titik (keyboard on-screen) -->
-            <div class="pt-3 border-t border-stone-200 dark:border-stone-600">
-              <p class="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-2">Input Braille (6 titik)</p>
-              <div class="flex flex-col items-center gap-2">
-                <div class="grid grid-cols-3 gap-2 w-[min(180px,80%)]" role="group" aria-label="Sel Braille 6 titik. Sentuh untuk nyalakan/matikan titik.">
-                  <button type="button" class="braille-dot min-h-[52px] rounded-xl border-2 border-stone-400 dark:border-stone-500 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-lg hover:bg-stone-200 dark:hover:bg-stone-600 transition" data-dot="1" aria-label="Titik 1">○</button>
-                  <button type="button" class="braille-dot min-h-[52px] rounded-xl border-2 border-stone-400 dark:border-stone-500 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-lg hover:bg-stone-200 dark:hover:bg-stone-600 transition" data-dot="2" aria-label="Titik 2">○</button>
-                  <button type="button" class="braille-dot min-h-[52px] rounded-xl border-2 border-stone-400 dark:border-stone-500 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-lg hover:bg-stone-200 dark:hover:bg-stone-600 transition" data-dot="3" aria-label="Titik 3">○</button>
-                  <button type="button" class="braille-dot min-h-[52px] rounded-xl border-2 border-stone-400 dark:border-stone-500 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-lg hover:bg-stone-200 dark:hover:bg-stone-600 transition" data-dot="4" aria-label="Titik 4">○</button>
-                  <button type="button" class="braille-dot min-h-[52px] rounded-xl border-2 border-stone-400 dark:border-stone-500 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-lg hover:bg-stone-200 dark:hover:bg-stone-600 transition" data-dot="5" aria-label="Titik 5">○</button>
-                  <button type="button" class="braille-dot min-h-[52px] rounded-xl border-2 border-stone-400 dark:border-stone-500 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-lg hover:bg-stone-200 dark:hover:bg-stone-600 transition" data-dot="6" aria-label="Titik 6">○</button>
-                </div>
-                <p id="brailleCellPreview" class="text-xs text-stone-500 dark:text-stone-400 min-h-[1.25rem]" aria-live="polite">Sel kosong</p>
-                <div class="flex gap-2 flex-wrap justify-center">
-                  <button type="button" id="brailleAddCharBtn" class="min-h-[44px] py-2.5 px-4 rounded-xl bg-stone-600 dark:bg-stone-500 text-white font-semibold text-sm hover:bg-stone-700 dark:hover:bg-stone-600 active:scale-[0.99] transition" aria-label="Tambah karakter dari sel Braille">Tambah karakter</button>
-                  <button type="button" id="brailleSpaceBtn" class="min-h-[44px] py-2.5 px-4 rounded-xl border-2 border-stone-400 dark:border-stone-500 text-stone-700 dark:text-stone-300 font-semibold text-sm hover:bg-stone-100 dark:hover:bg-stone-700 active:scale-[0.99] transition" aria-label="Spasi">Spasi</button>
-                  <button type="button" id="brailleBackspaceBtn" class="min-h-[44px] py-2.5 px-4 rounded-xl border-2 border-red-300 dark:border-red-600 text-red-700 dark:text-red-400 font-semibold text-sm hover:bg-red-50 dark:hover:bg-red-900/20 active:scale-[0.99] transition" aria-label="Hapus karakter terakhir">Hapus</button>
-                </div>
+          <!-- Input Braille 6 titik (keyboard on-screen) - always visible -->
+          <div class="pt-3 border-t border-stone-200 dark:border-stone-600">
+            <p class="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-2">Input Braille (6 titik)</p>
+            <div class="flex flex-col items-center gap-2">
+              <div class="grid grid-cols-3 gap-2 w-[min(180px,80%)]" role="group" aria-label="Sel Braille 6 titik. Sentuh untuk nyalakan/matikan titik.">
+                <button type="button" class="braille-dot min-h-[52px] rounded-xl border-2 border-stone-400 dark:border-stone-500 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-lg hover:bg-stone-200 dark:hover:bg-stone-600 transition" data-dot="1" aria-label="Titik 1">○</button>
+                <button type="button" class="braille-dot min-h-[52px] rounded-xl border-2 border-stone-400 dark:border-stone-500 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-lg hover:bg-stone-200 dark:hover:bg-stone-600 transition" data-dot="2" aria-label="Titik 2">○</button>
+                <button type="button" class="braille-dot min-h-[52px] rounded-xl border-2 border-stone-400 dark:border-stone-500 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-lg hover:bg-stone-200 dark:hover:bg-stone-600 transition" data-dot="3" aria-label="Titik 3">○</button>
+                <button type="button" class="braille-dot min-h-[52px] rounded-xl border-2 border-stone-400 dark:border-stone-500 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-lg hover:bg-stone-200 dark:hover:bg-stone-600 transition" data-dot="4" aria-label="Titik 4">○</button>
+                <button type="button" class="braille-dot min-h-[52px] rounded-xl border-2 border-stone-400 dark:border-stone-500 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-lg hover:bg-stone-200 dark:hover:bg-stone-600 transition" data-dot="5" aria-label="Titik 5">○</button>
+                <button type="button" class="braille-dot min-h-[52px] rounded-xl border-2 border-stone-400 dark:border-stone-500 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-lg hover:bg-stone-200 dark:hover:bg-stone-600 transition" data-dot="6" aria-label="Titik 6">○</button>
+              </div>
+              <p id="brailleCellPreview" class="text-xs text-stone-500 dark:text-stone-400 min-h-[1.25rem]" aria-live="polite">Sel kosong</p>
+              <div class="flex gap-2 flex-wrap justify-center">
+                <button type="button" id="brailleAddCharBtn" class="min-h-[44px] py-2.5 px-4 rounded-xl bg-stone-600 dark:bg-stone-500 text-white font-semibold text-sm hover:bg-stone-700 dark:hover:bg-stone-600 active:scale-[0.99] transition" aria-label="Tambah karakter dari sel Braille">Tambah karakter</button>
+                <button type="button" id="brailleSpaceBtn" class="min-h-[44px] py-2.5 px-4 rounded-xl border-2 border-stone-400 dark:border-stone-500 text-stone-700 dark:text-stone-300 font-semibold text-sm hover:bg-stone-100 dark:hover:bg-stone-700 active:scale-[0.99] transition" aria-label="Spasi">Spasi</button>
+                <button type="button" id="brailleBackspaceBtn" class="min-h-[44px] py-2.5 px-4 rounded-xl border-2 border-red-300 dark:border-red-600 text-red-700 dark:text-red-400 font-semibold text-sm hover:bg-red-50 dark:hover:bg-red-900/20 active:scale-[0.99] transition" aria-label="Hapus karakter terakhir">Hapus</button>
               </div>
             </div>
           </div>
@@ -205,7 +166,7 @@
           </div>
           <div class="flex gap-2 flex-wrap both-deafblind-hide">
             <button type="button" id="sendBtn" disabled
-              class="flex-1 min-w-[120px] min-h-[48px] py-3.5 rounded-xl bg-emerald-700 dark:bg-emerald-600 text-white font-semibold text-base hover:bg-emerald-600 dark:hover:bg-emerald-500 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.99] transition"
+              class="flex-1 min-w-[120px] min-h-[56px] py-4 rounded-2xl bg-emerald-700 dark:bg-emerald-600 text-white font-bold text-xl hover:bg-emerald-600 dark:hover:bg-emerald-500 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.99] transition"
               aria-label="Kirim pesan">
               Kirim
             </button>
@@ -242,41 +203,13 @@
           <label class="flex items-center gap-2 text-stone-600 dark:text-stone-400">
             <input type="checkbox" id="useGrade2" class="rounded">
             <span>Braille singkat (Grade 2) untuk kata umum</span>
-          </label>
-          <label class="flex items-center gap-2 text-stone-600 dark:text-stone-400" id="autoSendAfterVoiceWrap">
+          </label> -->
+          <!-- <label class="flex items-center gap-2 text-stone-600 dark:text-stone-400" id="autoSendAfterVoiceWrap">
             <input type="checkbox" id="autoSendAfterVoice" class="rounded">
             <span>Auto kirim setelah rekam suara (mode kedua tuli-buta)</span>
-          </label>
+          </label> -->
         </div>
-      </section> -->
-
-      <!-- Riwayat hari ini (untuk pendamping) -->
-      <!-- <section class="bg-stone-100/80 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 rounded-xl p-4">
-        <div class="flex justify-between items-center mb-2">
-          <h3 class="font-semibold text-stone-700 dark:text-stone-300 text-sm">Riwayat hari ini</h3>
-          <button type="button" id="showLogBtn" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline">Tampilkan</button>
-        </div>
-        <div id="logContent" class="hidden text-xs text-stone-600 dark:text-stone-400 max-h-32 overflow-y-auto space-y-1"></div>
-      </section> -->
-
-      <!-- Mode belajar -->
-      <!-- <section class="bg-amber-50/80 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-xl p-4">
-        <h3 class="font-semibold text-stone-700 dark:text-stone-300 text-sm mb-1">📖 Mode belajar</h3>
-        <p class="text-stone-600 dark:text-stone-400 text-xs mb-3 leading-relaxed">
-          Untuk pemula: mulai dari satu huruf (a, b), lalu kata pendek. Getaran panjang = titik Braille, pendek = jeda.
-        </p>
-        <div class="flex flex-wrap gap-2 mb-2">
-          <button type="button" data-learn="a" class="learn-btn px-2.5 py-1.5 rounded-lg border border-stone-300 dark:border-stone-600 text-stone-700 dark:text-stone-300 text-xs font-medium hover:bg-stone-100 dark:hover:bg-stone-700">a</button>
-          <button type="button" data-learn="b" class="learn-btn px-2.5 py-1.5 rounded-lg border border-stone-300 dark:border-stone-600 text-stone-700 dark:text-stone-300 text-xs font-medium hover:bg-stone-100 dark:hover:bg-stone-700">b</button>
-          <button type="button" data-learn="halo" class="learn-btn px-2.5 py-1.5 rounded-lg border border-stone-300 dark:border-stone-600 text-stone-700 dark:text-stone-300 text-xs font-medium hover:bg-stone-100 dark:hover:bg-stone-700">halo</button>
-          <button type="button" data-learn="iya" class="learn-btn px-2.5 py-1.5 rounded-lg border border-stone-300 dark:border-stone-600 text-stone-700 dark:text-stone-300 text-xs font-medium hover:bg-stone-100 dark:hover:bg-stone-700">iya</button>
-          <button type="button" data-learn="tidak" class="learn-btn px-2.5 py-1.5 rounded-lg border border-stone-300 dark:border-stone-600 text-stone-700 dark:text-stone-300 text-xs font-medium hover:bg-stone-100 dark:hover:bg-stone-700">tidak</button>
-          <button type="button" data-learn="makan" class="learn-btn px-2.5 py-1.5 rounded-lg border border-stone-300 dark:border-stone-600 text-stone-700 dark:text-stone-300 text-xs font-medium hover:bg-stone-100 dark:hover:bg-stone-700">makan</button>
-          <button type="button" data-learn="terima kasih" class="learn-btn px-2.5 py-1.5 rounded-lg border border-stone-300 dark:border-stone-600 text-stone-700 dark:text-stone-300 text-xs font-medium hover:bg-stone-100 dark:hover:bg-stone-700">terima kasih</button>
-          <button type="button" data-learn="apa kabar" class="learn-btn px-2.5 py-1.5 rounded-lg border border-stone-300 dark:border-stone-600 text-stone-700 dark:text-stone-300 text-xs font-medium hover:bg-stone-100 dark:hover:bg-stone-700">apa kabar</button>
-        </div>
-        <p class="text-xs text-stone-500 dark:text-stone-500">Tekan tombol di atas untuk dengar getaran (pelan). Ulangi sampai hafal polanya.</p>
-      </section> -->
+      </section>
 
       <!-- Info -->
       <section class="bg-stone-100/80 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 rounded-xl p-4">
@@ -289,7 +222,7 @@
     </main>
 
     <footer class="mt-auto pt-6 text-center">
-      <p class="text-stone-400 dark:text-stone-500 text-xs">Kaito Whale · Getaran = Braille</p>
+      <p class="text-stone-400 dark:text-stone-500 text-lg">Kaito Whale · Getaran = Braille</p>
     </footer>
   </div>
 

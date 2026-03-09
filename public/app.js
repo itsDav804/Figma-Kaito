@@ -5,6 +5,71 @@
 
 (function () {
   'use strict';
+  // --- Ensure Braille input UI is initialized for all users ---
+  document.addEventListener('DOMContentLoaded', function () {
+    // --- Input Braille 6 titik (on-screen keyboard) ---
+    var brailleCell = [0, 0, 0, 0, 0, 0];
+    function syncBrailleUI() {
+      document.querySelectorAll('.braille-dot').forEach(function (btn) {
+        var idx = parseInt(btn.getAttribute('data-dot'), 10) - 1;
+        btn.textContent = brailleCell[idx] ? '●' : '○';
+        btn.classList.toggle('bg-emerald-200', !!brailleCell[idx]);
+        btn.classList.toggle('dark:bg-emerald-700/50', !!brailleCell[idx]);
+      });
+      var key = brailleCell.join('');
+      var ch = REVERSE_BRAILLE_MAP[key];
+      var previewEl = document.getElementById('brailleCellPreview');
+      if (previewEl) previewEl.textContent = ch ? ('Karakter: "' + ch + '"') : 'Sel kosong';
+    }
+    function clearBrailleCell() {
+      brailleCell = [0, 0, 0, 0, 0, 0];
+      syncBrailleUI();
+    }
+    document.querySelectorAll('.braille-dot').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var idx = parseInt(this.getAttribute('data-dot'), 10) - 1;
+        brailleCell[idx] = brailleCell[idx] ? 0 : 1;
+        syncBrailleUI();
+      });
+    });
+    document.getElementById('brailleAddCharBtn').addEventListener('click', function () {
+      var key = brailleCell.join('');
+      var ch = REVERSE_BRAILLE_MAP[key];
+      if (ch !== undefined) {
+        var messageInput = document.getElementById('messageInput');
+        var charCount = document.getElementById('charCount');
+        messageInput.value = messageInput.value + ch;
+        if (charCount) charCount.textContent = messageInput.value.length;
+        document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
+        var playBtnEl = document.getElementById('playBtn');
+        if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
+        updateSendPreview();
+      }
+      clearBrailleCell();
+    });
+    document.getElementById('brailleSpaceBtn').addEventListener('click', function () {
+      var messageInput = document.getElementById('messageInput');
+      var charCount = document.getElementById('charCount');
+      messageInput.value = messageInput.value + ' ';
+      if (charCount) charCount.textContent = messageInput.value.length;
+      document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
+      var playBtnEl = document.getElementById('playBtn');
+      if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
+      updateSendPreview();
+    });
+    document.getElementById('brailleBackspaceBtn').addEventListener('click', function () {
+      var messageInput = document.getElementById('messageInput');
+      var charCount = document.getElementById('charCount');
+      if (messageInput.value.length === 0) return;
+      messageInput.value = messageInput.value.slice(0, -1);
+      if (charCount) charCount.textContent = messageInput.value.length;
+      document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
+      var playBtnEl = document.getElementById('playBtn');
+      if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
+      updateSendPreview();
+    });
+    syncBrailleUI();
+  });
 
   // --- Braille encoder (sama dengan versi React Native) ---
   const BRAILLE_MAP = {
