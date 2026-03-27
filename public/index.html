@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel=""stylesheet" href="styles.css">
   <!-- Fallback: tetap kelihatan kalau Tailwind belum jalan -->
   <style>
     body { background: #d4f7d4; color: #1c1917; margin: 0; min-height: 100vh; font-family: 'Figtree', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -118,6 +119,7 @@
       <section class="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl overflow-hidden shadow-sm">
         <div class="p-4 space-y-4">
           <!-- Mode standar: ketik + mood + preview Braille -->
+          <button id="togglebtn" class="bg-stone-200 dark:bg-stone-600 text-stone-700 dark:text-stone-300 font-semibold text-sm py-2 px-4 rounded-xl hover:bg-stone-300 dark:hover:bg-stone-500 active:scale-[0.99] transition">Keyboard</button>
           <div class="both-deafblind-hide">
             <label for="messageInput" class="simple-only block text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-1">Pesan</label>
             <!-- Removed mood select for simplicity -->
@@ -127,7 +129,6 @@
             <div class="flex justify-between items-center mt-1">
               <span id="longMessageWarning" class="hidden text-xs text-amber-600 dark:text-amber-400 advanced-only">Pesan panjang — penerima mungkin butuh waktu.</span>
               <span class="text-xs text-stone-400 dark:text-stone-500 ml-auto"><span id="charCount">0</span>/1000</span>
-                        <span class="text-lg text-stone-400 dark:text-stone-500 ml-auto"><span id="charCount">0</span>/1000</span>
             </div>
             <div id="previewSection" class="hidden pt-2 border-t border-stone-100 dark:border-stone-700 advanced-only">
               <span class="text-xs text-stone-500 dark:text-stone-400">Preview Morse</span>
@@ -135,7 +136,7 @@
             </div>
           </div>
           <!-- Input Braille 6 titik (keyboard on-screen) - always visible -->
-          <div class="pt-3 border-t border-stone-200 dark:border-stone-600">
+          <div id="brailleInputSection" class="pt-3 border-t border-stone-200 dark:border-stone-600 hidden">
             <p class="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-2">Input Morse</p>
             <div class="flex flex-col items-center gap-2">
               <div class="flex gap-2 mb-2">
@@ -209,14 +210,14 @@
       <section class="bg-stone-100/80 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 rounded-xl p-4">
         <h3 class="font-semibold text-stone-700 dark:text-stone-300 text-sm mb-2">Cara pakai</h3>
         <p id="infoText" class="text-stone-600 dark:text-stone-400 text-sm leading-relaxed">
-          Buka dari HP atau komputer. Kosongkan URL lalu Hubungkan. Setelah terhubung, ketik pesan dan Kirim — penerima merasakan getaran sesuai Braille.
+          Buka dari HP atau komputer. Kosongkan URL lalu Hubungkan. Setelah terhubung, ketik pesan dan Kirim — penerima merasakan getaran sesuai Morse.
         </p>
       </section>
       </div>
     </main>
 
     <footer class="mt-auto pt-6 text-center">
-      <p class="text-stone-400 dark:text-stone-500 text-lg">Kaito Whale · Getaran = Braille</p>
+      <p class="text-stone-400 dark:text-stone-500 text-lg">Kaito Whale · Getaran = Morse</p>
     </footer>
   </div>
 
@@ -227,7 +228,7 @@
       <ol class="text-sm text-stone-600 dark:text-stone-400 space-y-2 mb-6 list-decimal list-inside">
         <li>Hubungkan ke WiFi yang sama (HP &amp; pengirim).</li>
         <li>Buka app ini di HP penerima, ketik URL server lalu Hubungkan.</li>
-        <li>Ketik pesan dan Kirim — penerima merasakan getaran = Braille (panjang = titik, pendek = jeda).</li>
+        <li>Ketik pesan dan Kirim — penerima merasakan getaran = Morse (panjang = titik, pendek = jeda).</li>
       </ol>
       <p class="text-xs text-stone-500 dark:text-stone-500 mb-4">Gunakan <strong>Mode belajar</strong> untuk latihan pola getaran.</p>
       <button type="button" id="onboardingClose" class="w-full py-2.5 rounded-lg bg-emerald-600 text-white font-semibold text-sm">Mengerti</button>
@@ -516,6 +517,23 @@ WAKTU
         modal.addEventListener('click', function (e) {
           if (e.target === modal) modal.classList.add('hidden');
         });
+      }
+    });
+  </script>
+  <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleBtn = document.getElementById('togglebtn');
+      const Braille = document.getElementById('brailleInputSection');
+      let isClicked = false;
+
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+          isClicked = !isClicked;
+          toggleBtn.textContent = isClicked ? 'Braille' : 'Keyboard';
+          Braille.classList.toggle('hidden', !isClicked);
+        })
+      } else {
+        console.error('Toggle button not found');
       }
     });
   </script>

@@ -49,7 +49,7 @@
       if (ch !== undefined) {
         messageInput.value = messageInput.value + ch;
         if (charCount) charCount.textContent = messageInput.value.length;
-        document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
+        document.getElementById('sendBtn').disabled = !messageInput.value.trim();
         var playBtnEl = document.getElementById('playBtn');
         if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
         updateSendPreview();
@@ -783,9 +783,9 @@
         quickWrap.appendChild(btn);
       });
     }
-    document.getElementById('emergencyBtn').addEventListener('click', function () {
-      if (isConnected()) sendMessage('BUTUH BANTUAN DARURAT', { emergency: true });
-    });
+    // document.getElementById('emergencyBtn').addEventListener('click', function () {
+    //   if (isConnected()) sendMessage('BUTUH BANTUAN DARURAT', { emergency: true });
+    // });
 
     var voiceBtn = document.getElementById('voiceBtn');
     if (voiceBtn && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
