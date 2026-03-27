@@ -58,6 +58,8 @@
         <span id="darkModeIconMoon" class="dark:hidden">🌙</span>
         <span id="darkModeIconSun" class="hidden dark:inline">☀️</span>
       </button>
+      <button type="button" id="openDictionaryBtn" class="ml-2 p-3 rounded-xl bg-emerald-200 dark:bg-emerald-700 text-lg mt-2 font-bold" aria-label="Buka Kamus" title="Buka Kamus Bahasa Tactile">📖 Kamus</button>
+      <button type="button" id="openTrainingBtn" class="ml-2 p-3 rounded-xl bg-amber-200 dark:bg-amber-700 text-lg mt-2 font-bold" aria-label="Latihan Morse" title="Latihan Morse">🎯 Training</button>
       <label class="simple-only mt-3 flex items-center justify-center gap-2 cursor-pointer text-sm text-stone-600 dark:text-stone-400">
         <!-- Removed: simple/advanced toggle for universal layout -->
       </label>
@@ -128,27 +130,27 @@
                         <span class="text-lg text-stone-400 dark:text-stone-500 ml-auto"><span id="charCount">0</span>/1000</span>
             </div>
             <div id="previewSection" class="hidden pt-2 border-t border-stone-100 dark:border-stone-700 advanced-only">
-              <span class="text-xs text-stone-500 dark:text-stone-400">Preview Braille</span>
+              <span class="text-xs text-stone-500 dark:text-stone-400">Preview Morse</span>
               <p id="patternPreview" class="mt-1 text-sm font-mono text-emerald-700 dark:text-emerald-400 break-all"></p>
             </div>
           </div>
           <!-- Input Braille 6 titik (keyboard on-screen) - always visible -->
           <div class="pt-3 border-t border-stone-200 dark:border-stone-600">
-            <p class="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-2">Input Braille (6 titik)</p>
+            <p class="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-2">Input Morse</p>
             <div class="flex flex-col items-center gap-2">
-              <div class="grid grid-cols-2 grid-rows-3 gap-1 w-[min(380px,100%)]" role="group" aria-label="Sel Braille 6 titik. Sentuh untuk nyalakan/matikan titik.">
-                <button type="button" class="braille-dot min-h-[170px] min-w-[170px] rounded-2xl border-4 border-emerald-400 dark:border-emerald-700 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-2xl " data-dot="1" aria-label="Titik 1">○</button>
-                <button type="button" class="braille-dot min-h-[170px] min-w-[170px] rounded-2xl border-4 border-emerald-400 dark:border-emerald-700 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-2xl " data-dot="4" aria-label="Titik 4">○</button>
-                <button type="button" class="braille-dot min-h-[170px] min-w-[170px] rounded-2xl border-4 border-emerald-400 dark:border-emerald-700 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-2xl " data-dot="2" aria-label="Titik 2">○</button>
-                <button type="button" class="braille-dot min-h-[170px] min-w-[170px] rounded-2xl border-4 border-emerald-400 dark:border-emerald-700 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-2xl " data-dot="5" aria-label="Titik 5">○</button>
-                <button type="button" class="braille-dot min-h-[170px] min-w-[170px] rounded-2xl border-4 border-emerald-400 dark:border-emerald-700 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-2xl " data-dot="3" aria-label="Titik 3">○</button>
-                <button type="button" class="braille-dot min-h-[170px] min-w-[170px] rounded-2xl border-4 border-emerald-400 dark:border-emerald-700 bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-2xl " data-dot="6" aria-label="Titik 6">○</button>
+              <div class="flex gap-2 mb-2">
+                <button type="button" id="morseDotBtn" class="min-h-[60px] min-w-[60px] rounded-full border-4 border-emerald-400 dark:border-emerald-700 bg-stone-100 dark:bg-stone-700 text-emerald-700 dark:text-emerald-300 font-bold text-2xl flex items-center justify-center" aria-label="Dot (.)">•</button>
+                <button type="button" id="morseDashBtn" class="min-h-[60px] min-w-[60px] rounded-full border-4 border-amber-400 dark:border-amber-700 bg-stone-100 dark:bg-stone-700 text-amber-700 dark:text-amber-300 font-bold text-2xl flex items-center justify-center" aria-label="Dash (-)">—</button>
               </div>
-              <p id="brailleCellPreview" class="text-xs text-stone-500 dark:text-stone-400 min-h-[1.25rem]" aria-live="polite">Sel kosong</p>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-lg font-mono">Input:</span>
+                <span id="morseInputPreview" class="text-lg font-mono bg-stone-200 dark:bg-stone-800 px-3 py-1 rounded min-w-[60px] text-stone-900 dark:text-stone-100"> </span>
+              </div>
               <div class="flex gap-2 flex-wrap justify-center">
-                <button type="button" id="brailleAddCharBtn" class="min-h-[44px] py-2.5 px-4 rounded-xl bg-stone-600 dark:bg-stone-500 text-white font-semibold text-sm hover:bg-stone-700 dark:hover:bg-stone-600 active:scale-[0.99] transition" aria-label="Tambah karakter dari sel Braille">Tambah karakter</button>
-                <button type="button" id="brailleSpaceBtn" class="min-h-[44px] py-2.5 px-4 rounded-xl border-2 border-stone-400 dark:border-stone-500 text-stone-700 dark:text-stone-300 font-semibold text-sm hover:bg-stone-100 dark:hover:bg-stone-700 active:scale-[0.99] transition" aria-label="Spasi">Spasi</button>
-                <button type="button" id="brailleBackspaceBtn" class="min-h-[44px] py-2.5 px-4 rounded-xl border-2 border-red-300 dark:border-red-600 text-red-700 dark:text-red-400 font-semibold text-sm hover:bg-red-50 dark:hover:bg-red-900/20 active:scale-[0.99] transition" aria-label="Hapus karakter terakhir">Hapus</button>
+                <button type="button" id="morseAddCharBtn" class="min-h-[44px] py-2.5 px-4 rounded-xl bg-stone-600 dark:bg-stone-500 text-white font-semibold text-sm hover:bg-stone-700 dark:hover:bg-stone-600 active:scale-[0.99] transition" aria-label="Tambah karakter dari input Morse">Tambah karakter</button>
+                <button type="button" id="morseSpaceBtn" class="min-h-[44px] py-2.5 px-4 rounded-xl border-2 border-stone-400 dark:border-stone-500 text-stone-700 dark:text-stone-300 font-semibold text-sm hover:bg-stone-100 dark:hover:bg-stone-700 active:scale-[0.99] transition" aria-label="Spasi">Spasi</button>
+                <button type="button" id="morseBackspaceBtn" class="min-h-[44px] py-2.5 px-4 rounded-xl border-2 border-red-300 dark:border-red-600 text-red-700 dark:text-red-400 font-semibold text-sm hover:bg-red-50 dark:hover:bg-red-900/20 active:scale-[0.99] transition" aria-label="Hapus karakter terakhir">Hapus</button>
+                <button type="button" id="morseClearBtn" class="min-h-[44px] py-2.5 px-4 rounded-xl border-2 border-stone-400 dark:border-stone-500 text-stone-700 dark:text-stone-300 font-semibold text-sm hover:bg-stone-100 dark:hover:bg-stone-700 active:scale-[0.99] transition" aria-label="Clear input">Clear</button>
               </div>
             </div>
           </div>
@@ -235,6 +237,86 @@
   <script src="settings.js"></script>
   <script src="messageHistory.js"></script>
   <script src="features.js"></script>
+  <!-- Dictionary Modal -->
+  <div id="dictionaryModal" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-stone-800 rounded-xl max-w-md w-full p-6 shadow-xl overflow-y-auto max-h-[90vh] relative">
+      <button type="button" id="closeDictionaryBtn" class="absolute top-2 right-2 p-2 rounded-full bg-stone-200 dark:bg-stone-700 text-xl" aria-label="Tutup Kamus">✕</button>
+      <h2 class="font-display text-2xl text-center mb-2 text-stone-900 dark:text-stone-100">Kamus Bahasa Tactile</h2>
+      <div class="text-xs text-stone-500 dark:text-stone-400 mb-2">Kaito Whale</div>
+      <div class="text-sm text-stone-800 dark:text-stone-100 whitespace-pre-line font-mono">
+Durasi Pola
+-----------
+• = dot
+— = dash
+
+KONFIRMASI
+----------
+•        YA
+—        TIDAK
+••—•     MUNGKIN
+———•     TIDAK TAHU
+•—••     MENGERTI
+—•••     TIDAK MENGERTI
+
+KEBUTUHAN
+---------
+••       MAKAN
+——       MINUM
+•—       MANDI
+—•       TIDUR
+•••—     TOILET
+——•—     OBAT
+•——      DUDUK
+—••      BERDIRI
+
+KONDISI
+-------
+•••      LAPAR
+———      HAUS
+•—•      SAKIT
+—•—      CAPEK
+••—      DINGIN
+——•      PANAS
+•——•     PUSING
+—•••     SESAK
+
+EMOSI
+-----
+•—••     SENANG
+—••—     SEDIH
+••—•     TAKUT
+——••     MARAH
+•——      TENANG
+—••      GELISAH
+
+BANTUAN
+-------
+••••     TOLONG
+————     DARURAT
+•——•     PULANG
+—••—     BUTUH BANTUAN
+••——     ULANGI
+——••     SELESAI
+•—••     DATANG
+—•——     PERGI
+
+INTERAKSI
+---------
+•—•—     DENGARKAN
+—•••     TUNGGU
+••—•     CEPAT
+———•     PELAN
+•——•     LAGI
+
+WAKTU
+-----
+•••—     SEKARANG
+—••—     NANTI
+•——•     PAGI
+—•—•     MALAM
+      </div>
+    </div>
+  </div>
   <script>
     // Dark mode toggle - exposed early so button works even if app.js init fails
     function toggleDarkMode() {
@@ -261,5 +343,181 @@
     } catch (e) {}
   </script>
   <script src="app.js"></script>
+  <!-- Morse Training Modal -->
+  <div id="trainingModal" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-stone-800 rounded-xl max-w-md w-full p-6 shadow-xl overflow-y-auto max-h-[95vh] relative flex flex-col items-center">
+      <button type="button" id="closeTrainingBtn" class="absolute top-2 right-2 p-2 rounded-full bg-stone-200 dark:bg-stone-700 text-xl" aria-label="Tutup Latihan">✕</button>
+      <h2 class="font-display text-2xl text-center mb-2 text-stone-900 dark:text-stone-100">Training Morse</h2>
+      <div id="trainingContent" class="w-full"></div>
+    </div>
+  </div>
+  <script>
+    // Morse code map for A-Z (Latin)
+    const MORSE_MAP = {
+      'A': '.-',    'B': '-...',  'C': '-.-.',  'D': '-..',   'E': '.',
+      'F': '..-.',  'G': '--.',   'H': '....',  'I': '..',    'J': '.---',
+      'K': '-.-',   'L': '.-..',  'M': '--',    'N': '-.',    'O': '---',
+      'P': '.--.',  'Q': '--.-',  'R': '.-.',   'S': '...',   'T': '-',
+      'U': '..-',   'V': '...-',  'W': '.--',   'X': '-..-',  'Y': '-.--',
+      'Z': '--..',
+    };
+    // Extract dictionary words (from modal text)
+    const DICTIONARY_WORDS = [
+      'YA','TIDAK','MUNGKIN','TIDAK TAHU','MENGERTI','TIDAK MENGERTI',
+      'MAKAN','MINUM','MANDI','TIDUR','TOILET','OBAT','DUDUK','BERDIRI',
+      'LAPAR','HAUS','SAKIT','CAPEK','DINGIN','PANAS','PUSING','SESAK',
+      'SENANG','SEDIH','TAKUT','MARAH','TENANG','GELISAH',
+      'TOLONG','DARURAT','PULANG','BUTUH BANTUAN','ULANGI','SELESAI','DATANG','PERGI',
+      'DENGARKAN','TUNGGU','CEPAT','PELAN','LAGI',
+      'SEKARANG','NANTI','PAGI','MALAM'
+    ];
+    // UI logic
+    let trainingState = null;
+    function startTraining() {
+      trainingState = {
+        words: shuffleArray(DICTIONARY_WORDS.slice()),
+        current: 0,
+        correct: 0,
+        total: 0,
+        startTime: Date.now(),
+        perWord: [],
+        mode: 'input', // or 'result'
+      };
+      showTrainingWord();
+    }
+    function showTrainingWord() {
+      const content = document.getElementById('trainingContent');
+      if (!content) return;
+      if (trainingState.current >= trainingState.words.length) {
+        // Show summary
+        const time = Math.round((Date.now() - trainingState.startTime) / 1000);
+        const acc = trainingState.total ? Math.round(100 * trainingState.correct / trainingState.total) : 0;
+        content.innerHTML = `
+          <div class="text-center mb-4">
+            <div class="text-lg font-bold mb-2">Selesai!</div>
+            <div class="text-2xl font-bold text-emerald-700 dark:text-emerald-400">${acc}%</div>
+            <div class="text-base mb-2">Akurasi</div>
+            <div class="text-base">Waktu: ${time} detik</div>
+          </div>
+          <button id="quitTrainingBtn" class="w-full py-3 rounded-xl bg-red-200 dark:bg-red-700 text-red-900 dark:text-white font-bold mt-2">Tutup</button>
+        `;
+        document.getElementById('quitTrainingBtn').onclick = closeTraining;
+        return;
+      }
+      const word = trainingState.words[trainingState.current];
+      const letters = word.replace(/[^A-Z]/gi,'').toUpperCase().split('');
+      // Morse pattern for word
+      const morsePattern = letters.map(l => MORSE_MAP[l] || '').join(' ');
+      // Build input UI
+      let html = `<div class="text-center mb-2">
+        <div class="text-xs text-stone-500 mb-1">Current word</div>
+        <div class="text-2xl font-bold mb-2 tracking-widest">${word}</div>
+        <div class="text-xs text-stone-500 mb-1">Morse Pattern</div>
+        <div class="rounded-lg bg-stone-100 dark:bg-stone-700 py-2 px-4 mb-2 font-mono text-lg tracking-widest">${morsePattern}</div>
+      </div>`;
+      html += `<div class="flex flex-wrap justify-center gap-2 mb-4">`;
+      letters.forEach((l, i) => {
+        html += `<div class="flex flex-col items-center">
+          <div class="text-xs font-bold mb-1">${l}</div>
+          <input type="text" maxlength="5" data-idx="${i}" class="morse-input w-16 px-2 py-1 rounded-lg border border-stone-300 dark:border-stone-600 text-center font-mono text-lg" placeholder=". -" autocomplete="off" spellcheck="false">
+        </div>`;
+      });
+      html += `</div>`;
+      html += `<div class="flex gap-2 w-full mt-2">
+        <button id="skipWordBtn" class="flex-1 py-3 rounded-xl bg-red-200 dark:bg-red-700 text-red-900 dark:text-white font-bold">Skip</button>
+        <button id="practiceWordBtn" class="flex-1 py-3 rounded-xl bg-emerald-200 dark:bg-emerald-700 text-emerald-900 dark:text-white font-bold">Practice</button>
+      </div>`;
+      content.innerHTML = html;
+      document.getElementById('skipWordBtn').onclick = () => {
+        trainingState.current++;
+        showTrainingWord();
+      };
+      document.getElementById('practiceWordBtn').onclick = () => checkTrainingWord(letters);
+    }
+    function checkTrainingWord(letters) {
+      const inputs = Array.from(document.querySelectorAll('.morse-input'));
+      let correct = 0;
+      let total = letters.length;
+      let feedback = '';
+      inputs.forEach((inp, i) => {
+        const val = (inp.value || '').replace(/\s+/g,'');
+        const expected = (MORSE_MAP[letters[i]] || '').replace(/\s+/g,'');
+        if (val === expected) {
+          feedback += `<span class="inline-block w-10 h-10 rounded-full bg-emerald-400 text-white font-bold text-lg text-center leading-10 mx-1">${letters[i]}</span>`;
+          inp.style.background = '#bbf7d0';
+          correct++;
+        } else {
+          feedback += `<span class="inline-block w-10 h-10 rounded-full bg-red-300 text-white font-bold text-lg text-center leading-10 mx-1">${letters[i]}</span>`;
+          inp.style.background = '#fecaca';
+        }
+        inp.disabled = true;
+      });
+      trainingState.correct += correct;
+      trainingState.total += total;
+      // Show feedback and next/quit
+      const content = document.getElementById('trainingContent');
+      content.innerHTML = `
+        <div class="text-center mb-2">
+          <div class="text-xs text-stone-500 mb-1">Letter Morse</div>
+          <div class="flex flex-wrap justify-center gap-2 mb-4">${feedback}</div>
+        </div>
+        <div class="flex gap-2 w-full mt-2">
+          <button id="quitTrainingBtn" class="flex-1 py-3 rounded-xl bg-red-200 dark:bg-red-700 text-red-900 dark:text-white font-bold">Quit Practice</button>
+          <button id="nextWordBtn" class="flex-1 py-3 rounded-xl bg-emerald-200 dark:bg-emerald-700 text-emerald-900 dark:text-white font-bold">Next</button>
+        </div>
+        <div class="text-center text-xs text-stone-500 mt-2">Akurasi: ${Math.round(100*trainingState.correct/trainingState.total)}% &middot; Waktu: ${Math.round((Date.now()-trainingState.startTime)/1000)}s</div>
+      `;
+      document.getElementById('quitTrainingBtn').onclick = closeTraining;
+      document.getElementById('nextWordBtn').onclick = () => {
+        trainingState.current++;
+        showTrainingWord();
+      };
+    }
+    function closeTraining() {
+      document.getElementById('trainingModal').classList.add('hidden');
+    }
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+      var openBtn = document.getElementById('openTrainingBtn');
+      var modal = document.getElementById('trainingModal');
+      var closeBtn = document.getElementById('closeTrainingBtn');
+      if (openBtn && modal && closeBtn) {
+        openBtn.addEventListener('click', function () {
+          modal.classList.remove('hidden');
+          startTraining();
+        });
+        closeBtn.addEventListener('click', closeTraining);
+        modal.addEventListener('click', function (e) {
+          if (e.target === modal) closeTraining();
+        });
+      }
+    });
+  </script>
+  <script>
+    // Dictionary modal logic
+    document.addEventListener('DOMContentLoaded', function () {
+      var openBtn = document.getElementById('openDictionaryBtn');
+      var modal = document.getElementById('dictionaryModal');
+      var closeBtn = document.getElementById('closeDictionaryBtn');
+      if (openBtn && modal && closeBtn) {
+        openBtn.addEventListener('click', function () {
+          modal.classList.remove('hidden');
+        });
+        closeBtn.addEventListener('click', function () {
+          modal.classList.add('hidden');
+        });
+        // Close on overlay click
+        modal.addEventListener('click', function (e) {
+          if (e.target === modal) modal.classList.add('hidden');
+        });
+      }
+    });
+  </script>
 </body>
 </html>
