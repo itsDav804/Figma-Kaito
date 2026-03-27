@@ -26,11 +26,11 @@
     });
 
     var morseInput = '';
-    var morseInputPreview = document.getElementById('morseInputPreview');
     var messageInput = document.getElementById('messageInput');
     var charCount = document.getElementById('charCount');
-
+    
     function syncMorseUI() {
+      const morseInputPreview = document.getElementById('morseInputPreview');
       if (morseInputPreview) {
         morseInputPreview.textContent = morseInput || ' ';
       }
@@ -45,14 +45,14 @@
       syncMorseUI();
     });
     document.getElementById('morseAddCharBtn').addEventListener('click', function () {
-      var ch = REVERSE_MORSE_MAP[morseInput];
+      const ch = REVERSE_MORSE_MAP[morseInput];
       if (ch !== undefined) {
-        messageInput.value = messageInput.value + ch;
+        messageInput.value += ch;
         if (charCount) charCount.textContent = messageInput.value.length;
         document.getElementById('sendBtn').disabled = !messageInput.value.trim();
-        var playBtnEl = document.getElementById('playBtn');
+        const playBtnEl = document.getElementById('playBtn');
         if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
-        updateSendPreview();
+        if (typeof updateSendPreview === 'function') updateSendPreview();
       }
       morseInput = '';
       syncMorseUI();
@@ -72,13 +72,13 @@
       updateSendPreview();
     });
     document.getElementById('morseBackspaceBtn').addEventListener('click', function () {
-      if (morseInput.length > 0) {
-        morseInput = morseInput.slice(0, -1);
+      if (messageInput.value.length > 0) {
+        messageInput.value = messageInput.value.slice(0, -1);
         syncMorseUI();
       }
     });
     document.getElementById('morseClearBtn').addEventListener('click', function () {
-      morseInput = '';
+      messageInput.value = '';
       syncMorseUI();
     });
     syncMorseUI();
