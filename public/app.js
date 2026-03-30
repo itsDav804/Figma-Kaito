@@ -330,6 +330,8 @@ function updatePatternPreviewUI() {
       document.getElementById('connectBtn').disabled = false;
       document.getElementById('messagesSection').classList.remove('hidden');
       document.getElementById('userListSection').classList.remove('hidden');
+      document.getElementById('urlServerInput').classList.add('hidden');
+      document.getElementById('usernameInput').classList.add('hidden');
       var qs = document.getElementById('quickSection');
       if (qs) qs.classList.remove('hidden');
       var roleVal = document.getElementById('senderRole') && document.getElementById('senderRole').value;
@@ -393,6 +395,8 @@ function updatePatternPreviewUI() {
       document.getElementById('connectBtn').disabled = false;
       document.getElementById('messagesSection').classList.add('hidden');
       document.getElementById('userListSection').classList.add('hidden');
+      document.getElementById('urlServerInput').classList.remove('hidden');
+      document.getElementById('usernameInput').classList.remove('hidden');
       var qs = document.getElementById('quickSection');
       if (qs) qs.classList.add('hidden');
       var rr = document.getElementById('readReceiptRow');
