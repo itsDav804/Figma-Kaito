@@ -79,6 +79,10 @@ function updatePatternPreviewUI() {
       morseInput += '-';
       syncMorseUI();
     });
+    document.getElementById('morseDeleteBtn').addEventListener('click', function () {
+      morseInput = morseInput.slice(0, -1);
+      syncMorseUI();
+    });
     document.getElementById('morseAddCharBtn').addEventListener('click', function () {
       const ch = REVERSE_MORSE_MAP[morseInput];
       if (ch !== undefined) {
