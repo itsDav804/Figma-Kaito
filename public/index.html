@@ -524,6 +524,7 @@ WAKTU
     document.addEventListener('DOMContentLoaded', function() {
       const toggleBtn = document.getElementById('togglebtn');
       const Morse = document.getElementById('morseInputSection');
+      const messageInput = document.getElementById('messageInput');
       let isClicked = false;
 
       if (toggleBtn) {
@@ -531,6 +532,8 @@ WAKTU
           isClicked = !isClicked;
           toggleBtn.textContent = isClicked ? 'Morse' : 'Keyboard';
           Morse.classList.toggle('hidden', !isClicked);
+          messageInput.toggleAttribute('disabled', isClicked);
+          messageInput.placeholder = isClicked ? 'Gunakan tombol di bawah untuk input Morse…' : 'Ketik di sini… (Ctrl+Enter untuk kirim)';
         })
       } else {
         console.error('Toggle button not found');

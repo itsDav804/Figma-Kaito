@@ -26,3 +26,5 @@ web-build/
 
 # files for comparison
 compare/compare.js
+compare/compare.html
+compare/compare.css

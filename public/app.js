@@ -322,6 +322,9 @@ function updatePatternPreviewUI() {
     }
 
     ws.onopen = function () {
+      // ✅ CLEAR MESSAGES ON SUCCESSFUL CONNECT
+      clearMessages();
+      
       setStatus('connected', '✓ Terhubung');
       document.getElementById('connectBtn').textContent = '🔌 Putuskan';
       document.getElementById('connectBtn').disabled = false;
@@ -1139,4 +1142,30 @@ function updatePatternPreviewUI() {
     document.addEventListener('DOMContentLoaded', init);
   else
     init();
+
+  function clearMessages() {
+    const messagesList = document.getElementById('messagesList');
+    const emptyMessages = document.getElementById('emptyMessages');
+    
+    if (!messagesList) return;
+    
+    // Remove all dynamic messages
+    messagesList.innerHTML = '';
+    
+    // Restore empty state placeholder
+    if (emptyMessages) {
+      emptyMessages.classList.remove('hidden');
+      messagesList.appendChild(emptyMessages);
+    }
+    
+    // Optional: Clear in-memory history if using MessageHistory module
+    if (window.MessageHistory && typeof window.MessageHistory.clear === 'function') {
+      window.MessageHistory.clear();
+    }
+    
+    // Optional: Reset receipt tracking
+    lastReceivedMessageId = null;
+    lastReceivedMessageData = null;
+    if (messageIdToElement) messageIdToElement = {};
+  }
 })();
