@@ -322,11 +322,16 @@ function updatePatternPreviewUI() {
     }
 
     ws.onopen = function () {
+      // ✅ CLEAR MESSAGES ON SUCCESSFUL CONNECT
+      clearMessages();
+      
       setStatus('connected', '✓ Terhubung');
       document.getElementById('connectBtn').textContent = '🔌 Putuskan';
       document.getElementById('connectBtn').disabled = false;
       document.getElementById('messagesSection').classList.remove('hidden');
       document.getElementById('userListSection').classList.remove('hidden');
+      document.getElementById('urlServerInput').classList.add('hidden');
+      document.getElementById('usernameInput').classList.add('hidden');
       var qs = document.getElementById('quickSection');
       if (qs) qs.classList.remove('hidden');
       var roleVal = document.getElementById('senderRole') && document.getElementById('senderRole').value;
@@ -390,6 +395,8 @@ function updatePatternPreviewUI() {
       document.getElementById('connectBtn').disabled = false;
       document.getElementById('messagesSection').classList.add('hidden');
       document.getElementById('userListSection').classList.add('hidden');
+      document.getElementById('urlServerInput').classList.remove('hidden');
+      document.getElementById('usernameInput').classList.remove('hidden');
       var qs = document.getElementById('quickSection');
       if (qs) qs.classList.add('hidden');
       var rr = document.getElementById('readReceiptRow');
@@ -1139,4 +1146,30 @@ function updatePatternPreviewUI() {
     document.addEventListener('DOMContentLoaded', init);
   else
     init();
+
+  function clearMessages() {
+    const messagesList = document.getElementById('messagesList');
+    const emptyMessages = document.getElementById('emptyMessages');
+    
+    if (!messagesList) return;
+    
+    // Remove all dynamic messages
+    messagesList.innerHTML = '';
+    
+    // Restore empty state placeholder
+    if (emptyMessages) {
+      emptyMessages.classList.remove('hidden');
+      messagesList.appendChild(emptyMessages);
+    }
+    
+    // Optional: Clear in-memory history if using MessageHistory module
+    if (window.MessageHistory && typeof window.MessageHistory.clear === 'function') {
+      window.MessageHistory.clear();
+    }
+    
+    // Optional: Reset receipt tracking
+    lastReceivedMessageId = null;
+    lastReceivedMessageData = null;
+    if (messageIdToElement) messageIdToElement = {};
+  }
 })();
