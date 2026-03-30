@@ -403,7 +403,7 @@ function updatePatternPreviewUI() {
 
     ws.onclose = function (event) {
       ws = null;
-      setStatus('', '○ Terputus');
+      setStatus('', 'Terputus');
       document.getElementById('connectBtn').textContent = '🔗 Hubungkan';
       document.getElementById('connectBtn').disabled = false;
       document.getElementById('messagesSection').classList.add('hidden');
