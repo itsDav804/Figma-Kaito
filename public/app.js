@@ -60,8 +60,14 @@ function updatePatternPreviewUI() {
     
     function syncMorseUI() {
       const morseInputPreview = document.getElementById('morseInputPreview');
+      const morseResultPreview = document.getElementById('morseResultPreview');
       if (morseInputPreview) {
         morseInputPreview.textContent = morseInput || ' ';
+      }
+
+      if (morseResultPreview) {
+        const translatedChar = REVERSE_MORSE_MAP[morseInput] || '';
+        morseResultPreview.textContent = translatedChar;
       }
     }
 
