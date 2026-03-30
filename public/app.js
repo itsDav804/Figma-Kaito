@@ -26,37 +26,39 @@
     var morseInput = '';
     var messageInput = document.getElementById('messageInput');
     var charCount = document.getElementById('charCount');
+    var morseTimer = null;
+    var MORSE_AUTO_SUBMIT_DELAY = 2000;
 
 // --- Helper: Update Morse Preview UI ---
-function updatePatternPreviewUI() {
-  var text = messageInput.value;
-  var previewSection = document.getElementById('previewSection');
-  var patternPreviewEl = document.getElementById('patternPreview');
-  var sendBtn = document.getElementById('sendBtn');
-  var playBtn = document.getElementById('playBtn');
-  var longWarn = document.getElementById('longMessageWarning');
+    function updatePatternPreviewUI() {
+      var text = messageInput.value;
+      var previewSection = document.getElementById('previewSection');
+      var patternPreviewEl = document.getElementById('patternPreview');
+      var sendBtn = document.getElementById('sendBtn');
+      var playBtn = document.getElementById('playBtn');
+      var longWarn = document.getElementById('longMessageWarning');
 
-  if (charCount) {
-    charCount.textContent = text.length;
-    charCount.className = text.length > 900 ? 'text-xs text-amber-600 mt-1 text-right' : 'text-xs text-stone-400 mt-1 text-right';
-  }
+      if (charCount) {
+        charCount.textContent = text.length;
+        charCount.className = text.length > 900 ? 'text-xs text-amber-600 mt-1 text-right' : 'text-xs text-stone-400 mt-1 text-right';
+      }
 
-  if (longWarn) {
-    longWarn.classList.toggle('hidden', text.length < 200);
-  }
+      if (longWarn) {
+        longWarn.classList.toggle('hidden', text.length < 200);
+      }
 
-  if (previewSection && patternPreviewEl) {
-    if (text.length > 0) {
-      previewSection.classList.remove('hidden');
-      patternPreviewEl.textContent = getPatternPreview(text);
-    } else {
-      previewSection.classList.add('hidden');
+      if (previewSection && patternPreviewEl) {
+        if (text.length > 0) {
+          previewSection.classList.remove('hidden');
+          patternPreviewEl.textContent = getPatternPreview(text);
+        } else {
+          previewSection.classList.add('hidden');
+        }
+      }
+
+      if (sendBtn) sendBtn.disabled = !isConnected() || !text.trim();
+      if (playBtn) playBtn.disabled = !text.trim();
     }
-  }
-
-  if (sendBtn) sendBtn.disabled = !isConnected() || !text.trim();
-  if (playBtn) playBtn.disabled = !text.trim();
-}
     
     function syncMorseUI() {
       const morseInputPreview = document.getElementById('morseInputPreview');
@@ -71,18 +73,52 @@ function updatePatternPreviewUI() {
       }
     }
 
+    function resetMorseTimer() {
+      if (morseTimer) {
+        clearTimeout(morseTimer);
+      }
+      
+      // Only start timer if there's Morse input
+      if (morseInput.length > 0) {
+        morseTimer = setTimeout(function() {
+          autoAddMorseCharacter();
+        }, MORSE_AUTO_SUBMIT_DELAY);
+      }
+    }
+
     document.getElementById('morseDotBtn').addEventListener('click', function () {
       morseInput += '.';
       syncMorseUI();
+      resetMorseTimer();
     });
+
     document.getElementById('morseDashBtn').addEventListener('click', function () {
       morseInput += '-';
       syncMorseUI();
+      resetMorseTimer();
     });
+
     document.getElementById('morseDeleteBtn').addEventListener('click', function () {
       morseInput = morseInput.slice(0, -1);
       syncMorseUI();
+      resetMorseTimer();
     });
+
+    function autoAddMorseCharacter() {
+      const ch = REVERSE_MORSE_MAP[morseInput];
+      if (ch !== undefined) {
+        messageInput.value += ch;
+        if (charCount) charCount.textContent = messageInput.value.length;
+        document.getElementById('sendBtn').disabled = !messageInput.value.trim();
+        const playBtnEl = document.getElementById('playBtn');
+        if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
+        if (typeof updateSendPreview === 'function') updateSendPreview();
+      }
+      morseInput = '';
+      syncMorseUI();
+      updatePatternPreviewUI();
+    }
+
     document.getElementById('morseAddCharBtn').addEventListener('click', function () {
       const ch = REVERSE_MORSE_MAP[morseInput];
       if (ch !== undefined) {
@@ -101,8 +137,13 @@ function updatePatternPreviewUI() {
     // Synchronize: when textarea changes, clear Morse input
     messageInput.addEventListener('input', function () {
       morseInput = '';
+      if (morseTimer) {
+        clearTimeout(morseTimer);
+        morseTimer = null;
+      }
       syncMorseUI();
     });
+
     document.getElementById('morseSpaceBtn').addEventListener('click', function () {
       messageInput.value = messageInput.value + ' ';
       if (charCount) charCount.textContent = messageInput.value.length;
@@ -110,25 +151,27 @@ function updatePatternPreviewUI() {
       var playBtnEl = document.getElementById('playBtn');
       if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
       updateSendPreview();
-  
-  // Update Morse Preview Immediately
-  updatePatternPreviewUI();
+      updatePatternPreviewUI();
+      if (morseTimer) {
+        clearTimeout(morseTimer);
+        morseTimer = null;
+      }
+      morseInput = '';
+      syncMorseUI();
     });
+
     document.getElementById('morseBackspaceBtn').addEventListener('click', function () {
       if (messageInput.value.length > 0) {
         messageInput.value = messageInput.value.slice(0, -1);
         syncMorseUI();
-    
-    // Update Morse Preview Immediately
-    updatePatternPreviewUI();
+        updatePatternPreviewUI();
       }
     });
+
     document.getElementById('morseClearBtn').addEventListener('click', function () {
       messageInput.value = '';
       syncMorseUI();
-  
-  // Update Morse Preview Immediately
-  updatePatternPreviewUI();
+      updatePatternPreviewUI();
     });
     syncMorseUI();
   });
@@ -400,7 +443,7 @@ function updatePatternPreviewUI() {
 
     ws.onclose = function (event) {
       ws = null;
-      setStatus('', '○ Terputus');
+      setStatus('', 'Terputus');
       document.getElementById('connectBtn').textContent = '🔗 Hubungkan';
       document.getElementById('connectBtn').disabled = false;
       document.getElementById('messagesSection').classList.add('hidden');
