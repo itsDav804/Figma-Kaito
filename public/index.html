@@ -50,20 +50,23 @@
   </style>
 </head>
 <body id="appBody" class="min-h-screen bg-green-100 dark:bg-stone-900 text-stone-900 dark:text-stone-100 font-sans text-base antialiased transition-colors">
-  <div class="max-w-md mx-auto min-h-screen flex flex-col px-4 pb-10 pt-6 simple-layout">
+  <div class="w-full md:w-1/2 md:mx-auto min-h-screen flex flex-col px-4 pb-10 pt-6 simple-layout">
     <!-- Header -->
-    <header class="text-center mb-4 relative">
-      <h1 class="font-display text-4xl text-stone-900 dark:text-stone-100 italic mb-2">Kaito Whale</h1>
-      <p class="text-stone-500 dark:text-stone-400 text-base mb-2">Komunikasi getaran untuk semua usia</p>
-      <button type="button" id="darkModeBtn" onclick="toggleDarkMode()" class="p-3 rounded-xl bg-stone-200 dark:bg-stone-700 text-lg mt-2" aria-label="Toggle dark mode" title="Ganti tema gelap/terang">
-        <span id="darkModeIconMoon" class="dark:hidden">🌙</span>
-        <span id="darkModeIconSun" class="hidden dark:inline">☀️</span>
-      </button>
-      <button type="button" id="openDictionaryBtn" class="ml-2 p-3 rounded-xl bg-emerald-200 dark:bg-emerald-700 text-lg mt-2 font-bold" aria-label="Buka Kamus" title="Buka Kamus Bahasa Tactile">📖 Kamus</button>
-      <button type="button" id="openTrainingBtn" class="ml-2 p-3 rounded-xl bg-amber-200 dark:bg-amber-700 text-lg mt-2 font-bold" aria-label="Latihan Morse" title="Latihan Morse">🎯 Training</button>
-      <label class="simple-only mt-3 flex items-center justify-center gap-2 cursor-pointer text-sm text-stone-600 dark:text-stone-400">
-        <!-- Removed: simple/advanced toggle for universal layout -->
-      </label>
+    <header class="flex justify-between items-center mb-4 relative">
+      <div>
+        <h1 class="font-display text-4xl text-stone-900 dark:text-stone-100 italic mb-2">Kaito Whale</h1>
+        <label class="simple-only mt-3 flex items-center justify-center gap-2 cursor-pointer text-sm text-stone-600 dark:text-stone-400">
+          <!-- Removed: simple/advanced toggle for universal layout -->
+        </label>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" id="darkModeBtn" onclick="toggleDarkMode()" class="p-3 rounded-xl bg-stone-200 dark:bg-stone-700 text-lg" aria-label="Toggle dark mode" title="Ganti tema gelap/terang">
+          <span id="darkModeIconMoon" class="dark:hidden">🌙</span>
+          <span id="darkModeIconSun" class="hidden dark:inline">☀️</span>
+        </button>
+        <button type="button" id="openDictionaryBtn" class="p-3 rounded-xl bg-emerald-200 dark:bg-emerald-700 text-lg font-bold" aria-label="Buka Kamus" title="Buka Kamus Bahasa Tactile">📖 Kamus</button>
+        <button type="button" id="openTrainingBtn" class="p-3 rounded-xl bg-amber-200 dark:bg-amber-700 text-lg font-bold" aria-label="Latihan Morse" title="Latihan Morse">🎯 Training</button>
+      </div>
     </header>
 
     <main class="flex-1 flex flex-col gap-4">
