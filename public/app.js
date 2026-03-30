@@ -2,7 +2,6 @@
  * Kaito Whale - Web App
  * Braille → Getaran, WebSocket chat
  */
-
 (function () {
   'use strict';
   // --- Ensure Braille input UI is initialized for all users ---
@@ -24,10 +23,40 @@
     Object.keys(MORSE_MAP).forEach(function (ch) {
       REVERSE_MORSE_MAP[MORSE_MAP[ch]] = ch;
     });
-
     var morseInput = '';
     var messageInput = document.getElementById('messageInput');
     var charCount = document.getElementById('charCount');
+
+// --- Helper: Update Morse Preview UI ---
+function updatePatternPreviewUI() {
+  var text = messageInput.value;
+  var previewSection = document.getElementById('previewSection');
+  var patternPreviewEl = document.getElementById('patternPreview');
+  var sendBtn = document.getElementById('sendBtn');
+  var playBtn = document.getElementById('playBtn');
+  var longWarn = document.getElementById('longMessageWarning');
+
+  if (charCount) {
+    charCount.textContent = text.length;
+    charCount.className = text.length > 900 ? 'text-xs text-amber-600 mt-1 text-right' : 'text-xs text-stone-400 mt-1 text-right';
+  }
+
+  if (longWarn) {
+    longWarn.classList.toggle('hidden', text.length < 200);
+  }
+
+  if (previewSection && patternPreviewEl) {
+    if (text.length > 0) {
+      previewSection.classList.remove('hidden');
+      patternPreviewEl.textContent = getPatternPreview(text);
+    } else {
+      previewSection.classList.add('hidden');
+    }
+  }
+
+  if (sendBtn) sendBtn.disabled = !isConnected() || !text.trim();
+  if (playBtn) playBtn.disabled = !text.trim();
+}
     
     function syncMorseUI() {
       const morseInputPreview = document.getElementById('morseInputPreview');
@@ -56,6 +85,7 @@
       }
       morseInput = '';
       syncMorseUI();
+      updatePatternPreviewUI();
     });
 
     // Synchronize: when textarea changes, clear Morse input
@@ -70,21 +100,28 @@
       var playBtnEl = document.getElementById('playBtn');
       if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
       updateSendPreview();
+  
+  // Update Morse Preview Immediately
+  updatePatternPreviewUI();
     });
     document.getElementById('morseBackspaceBtn').addEventListener('click', function () {
       if (messageInput.value.length > 0) {
         messageInput.value = messageInput.value.slice(0, -1);
         syncMorseUI();
+    
+    // Update Morse Preview Immediately
+    updatePatternPreviewUI();
       }
     });
     document.getElementById('morseClearBtn').addEventListener('click', function () {
       messageInput.value = '';
       syncMorseUI();
+  
+  // Update Morse Preview Immediately
+  updatePatternPreviewUI();
     });
     syncMorseUI();
   });
-
-
   // --- Morse encoder ---
   // Morse code map (A-Z, 0-9)
   const MORSE_MAP = {
@@ -102,7 +139,6 @@
   Object.keys(MORSE_MAP).forEach(function (ch) {
     REVERSE_MORSE_MAP[MORSE_MAP[ch]] = ch;
   });
-
   const DURATIONS = {
     SHORT: 200,
     LONG: 500,
@@ -110,7 +146,6 @@
     CHAR_PAUSE: 300,
     WORD_PAUSE: 500
   };
-
 
   function textToVibrationPattern(text) {
     const patterns = [];
@@ -155,7 +190,7 @@
     }
     return preview.trim();
   }
-
+  
   function textToVibrationPatternGrade2(text) {
     var FEAT = window.KaitoWhaleFeatures;
     if (!FEAT || !FEAT.GRADE2_WORDS) return textToVibrationPattern(text);
@@ -177,12 +212,10 @@
     }
     return patterns;
   }
-
   // --- Vibration (Web API) ---
   function isVibrationSupported() {
     return typeof navigator !== 'undefined' && navigator.vibrate;
   }
-
   // Vibration queue untuk handle multiple vibrations
   let vibrationQueue = [];
   let isPlayingVibration = false;
@@ -193,7 +226,6 @@
       if (onProgress) onProgress({ current: 0, total: patterns.length });
       return Promise.resolve();
     }
-    
     // speedOverride > 1 = lebih pelan (untuk belajar), < 1 = lebih cepat
     const speedMultiplier = speedOverride !== undefined ? speedOverride : (settings.vibrationSpeed || 1.0);
     const arr = patterns.map(p => Math.round(p.duration * speedMultiplier));
@@ -239,7 +271,6 @@
       setTimeout(resolve, arr.reduce(function(a, b) { return a + b; }, 0));
     });
   }
-
   // --- WebSocket ---
   function getDefaultWsUrl() {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -413,7 +444,6 @@
       : 'rounded-lg p-2.5 max-w-[85%] bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700';
     div.setAttribute('role', 'article');
     div.setAttribute('aria-label', 'Pesan dari ' + (data.from ? (data.from.name || 'Anonymous') : 'Saya'));
-    
     const sender = document.createElement('span');
     sender.className = 'block text-xs font-semibold text-stone-500 dark:text-stone-400 mb-0.5';
     sender.textContent = data.from ? (data.from.name || 'Anonymous') : 'Saya';
@@ -450,7 +480,6 @@
   function showTypingIndicator(data) {
     const indicator = document.getElementById('typingIndicator');
     if (!indicator) return;
-    
     if (data.isTyping) {
       indicator.classList.remove('hidden');
       indicator.textContent = (data.from.name || 'Anonymous') + ' sedang mengetik...';
@@ -479,7 +508,6 @@
     div.textContent = s;
     return div.innerHTML;
   }
-
   // Validate & sanitize message
   function validateMessage(text) {
     if (!text || typeof text !== 'string') return null;
@@ -522,7 +550,6 @@
     chain.catch(function() {});
     return chain;
   }
-
   // Load message history
   function loadMessageHistory() {
     if (!window.MessageHistory) return;
@@ -536,7 +563,6 @@
       });
     }
   }
-
   // Dark mode toggle
   function toggleDarkMode() {
     const html = document.documentElement;
@@ -552,7 +578,6 @@
     }
     return isDark;
   }
-
   // --- UI ---
   function init() {
     // Load settings (harus di-load dulu sebelum digunakan)
@@ -1000,60 +1025,60 @@
     });
 
     // --- Input Braille 6 titik (on-screen keyboard) ---
-    var brailleCell = [0, 0, 0, 0, 0, 0];
-    function syncBrailleUI() {
-      document.querySelectorAll('.braille-dot').forEach(function (btn) {
-        var idx = parseInt(btn.getAttribute('data-dot'), 10) - 1;
-        btn.textContent = brailleCell[idx] ? '●' : '○';
-        btn.classList.toggle('bg-emerald-200', !!brailleCell[idx]);
-        btn.classList.toggle('dark:bg-emerald-700/50', !!brailleCell[idx]);
-      });
-      var key = brailleCell.join('');
-      var ch = REVERSE_BRAILLE_MAP[key];
-      var previewEl = document.getElementById('brailleCellPreview');
-      if (previewEl) previewEl.textContent = ch ? ('Karakter: "' + ch + '"') : 'Sel kosong';
-    }
-    function clearBrailleCell() {
-      brailleCell = [0, 0, 0, 0, 0, 0];
-      syncBrailleUI();
-    }
-    document.querySelectorAll('.braille-dot').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var idx = parseInt(this.getAttribute('data-dot'), 10) - 1;
-        brailleCell[idx] = brailleCell[idx] ? 0 : 1;
-        syncBrailleUI();
-      });
-    });
-    document.getElementById('brailleAddCharBtn').addEventListener('click', function () {
-      var key = brailleCell.join('');
-      var ch = REVERSE_BRAILLE_MAP[key];
-      if (ch !== undefined) {
-        messageInput.value = messageInput.value + ch;
-        if (charCount) charCount.textContent = messageInput.value.length;
-        document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
-        var playBtnEl = document.getElementById('playBtn');
-        if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
-        updateSendPreview();
-      }
-      clearBrailleCell();
-    });
-    document.getElementById('brailleSpaceBtn').addEventListener('click', function () {
-      messageInput.value = messageInput.value + ' ';
-      if (charCount) charCount.textContent = messageInput.value.length;
-      document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
-      var playBtnEl = document.getElementById('playBtn');
-      if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
-      updateSendPreview();
-    });
-    document.getElementById('brailleBackspaceBtn').addEventListener('click', function () {
-      if (messageInput.value.length === 0) return;
-      messageInput.value = messageInput.value.slice(0, -1);
-      if (charCount) charCount.textContent = messageInput.value.length;
-      document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
-      var playBtnEl = document.getElementById('playBtn');
-      if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
-      updateSendPreview();
-    });
+    // var brailleCell = [0, 0, 0, 0, 0, 0];
+    // function syncBrailleUI() {
+    //   document.querySelectorAll('.braille-dot').forEach(function (btn) {
+    //     var idx = parseInt(btn.getAttribute('data-dot'), 10) - 1;
+    //     btn.textContent = brailleCell[idx] ? '●' : '○';
+    //     btn.classList.toggle('bg-emerald-200', !!brailleCell[idx]);
+    //     btn.classList.toggle('dark:bg-emerald-700/50', !!brailleCell[idx]);
+    //   });
+    //   var key = brailleCell.join('');
+    //   var ch = REVERSE_BRAILLE_MAP[key];
+    //   var previewEl = document.getElementById('brailleCellPreview');
+    //   if (previewEl) previewEl.textContent = ch ? ('Karakter: "' + ch + '"') : 'Sel kosong';
+    // }
+    // function clearBrailleCell() {
+    //   brailleCell = [0, 0, 0, 0, 0, 0];
+    //   syncBrailleUI();
+    // }
+    // document.querySelectorAll('.braille-dot').forEach(function (btn) {
+    //   btn.addEventListener('click', function () {
+    //     var idx = parseInt(this.getAttribute('data-dot'), 10) - 1;
+    //     brailleCell[idx] = brailleCell[idx] ? 0 : 1;
+    //     syncBrailleUI();
+    //   });
+    // });
+    // document.getElementById('brailleAddCharBtn').addEventListener('click', function () {
+    //   var key = brailleCell.join('');
+    //   var ch = REVERSE_BRAILLE_MAP[key];
+    //   if (ch !== undefined) {
+    //     messageInput.value = messageInput.value + ch;
+    //     if (charCount) charCount.textContent = messageInput.value.length;
+    //     document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
+    //     var playBtnEl = document.getElementById('playBtn');
+    //     if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
+    //     updateSendPreview();
+    //   }
+    //   clearBrailleCell();
+    // });
+    // document.getElementById('brailleSpaceBtn').addEventListener('click', function () {
+    //   messageInput.value = messageInput.value + ' ';
+    //   if (charCount) charCount.textContent = messageInput.value.length;
+    //   document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
+    //   var playBtnEl = document.getElementById('playBtn');
+    //   if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
+    //   updateSendPreview();
+    // });
+    // document.getElementById('brailleBackspaceBtn').addEventListener('click', function () {
+    //   if (messageInput.value.length === 0) return;
+    //   messageInput.value = messageInput.value.slice(0, -1);
+    //   if (charCount) charCount.textContent = messageInput.value.length;
+    //   document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
+    //   var playBtnEl = document.getElementById('playBtn');
+    //   if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
+    //   updateSendPreview();
+    // });
 
     document.getElementById('showLogBtn').addEventListener('click', function () {
       var logContent = document.getElementById('logContent');

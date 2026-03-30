@@ -23,3 +23,6 @@ web-build/
 
 # Server PID (start/stop scripts)
 .server.pid
+
+# files for comparison
+compare/compare.js
