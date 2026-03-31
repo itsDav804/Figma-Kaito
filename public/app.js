@@ -541,6 +541,10 @@
     text.className = 'text-sm text-stone-900 dark:text-stone-100 mb-0.5 break-words';
     text.textContent = data.text || '';
     
+    const morse = document.createElement('p');
+    morse.className = 'text-xs text-stone-500 dark:text-stone-400 font-mono mb-0.5 break-words';
+    morse.textContent = textToMorseWithSlashes(data.text || '');
+    
     const timeEl = document.createElement('span');
     timeEl.className = 'text-xs text-stone-400 dark:text-stone-500';
     timeEl.textContent = time;
@@ -548,6 +552,7 @@
     
     div.appendChild(sender);
     div.appendChild(text);
+    div.appendChild(morse);
     div.appendChild(timeEl);
     list.appendChild(div);
     
@@ -597,6 +602,21 @@
     div.textContent = s;
     return div.innerHTML;
   }
+
+  function textToMorseWithSlashes(text) {
+    if (!text) return '';
+    const upperText = text.toUpperCase();
+    const morseArray = [];
+    for (const char of upperText) {
+      if (char === ' ') {
+        morseArray.push('SPACE');
+      } else if (MORSE_MAP[char]) {
+        morseArray.push(MORSE_MAP[char]);
+      }
+    }
+    return morseArray.join(' / ');
+  }
+
   // Validate & sanitize message
   function validateMessage(text) {
     if (!text || typeof text !== 'string') return null;
