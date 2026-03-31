@@ -23,40 +23,21 @@
     Object.keys(MORSE_MAP).forEach(function (ch) {
       REVERSE_MORSE_MAP[MORSE_MAP[ch]] = ch;
     });
+
+    // Temporary Morse storage
+    window.tempMorse = '';
+
+    function addMorse(char) {
+      window.tempMorse += char === '•' ? '.' : '-';
+    }
+
+    function deleteMorse() {
+      window.tempMorse = window.tempMorse.slice(0, -1);
+    }
+
     var morseInput = '';
     var messageInput = document.getElementById('messageInput');
     var charCount = document.getElementById('charCount');
-
-// --- Helper: Update Morse Preview UI ---
-function updatePatternPreviewUI() {
-  var text = messageInput.value;
-  var previewSection = document.getElementById('previewSection');
-  var patternPreviewEl = document.getElementById('patternPreview');
-  var sendBtn = document.getElementById('sendBtn');
-  var playBtn = document.getElementById('playBtn');
-  var longWarn = document.getElementById('longMessageWarning');
-
-  if (charCount) {
-    charCount.textContent = text.length;
-    charCount.className = text.length > 900 ? 'text-xs text-amber-600 mt-1 text-right' : 'text-xs text-stone-400 mt-1 text-right';
-  }
-
-  if (longWarn) {
-    longWarn.classList.toggle('hidden', text.length < 200);
-  }
-
-  if (previewSection && patternPreviewEl) {
-    if (text.length > 0) {
-      previewSection.classList.remove('hidden');
-      patternPreviewEl.textContent = getPatternPreview(text);
-    } else {
-      previewSection.classList.add('hidden');
-    }
-  }
-
-  if (sendBtn) sendBtn.disabled = !isConnected() || !text.trim();
-  if (playBtn) playBtn.disabled = !text.trim();
-}
     
     function syncMorseUI() {
       const morseInputPreview = document.getElementById('morseInputPreview');
@@ -73,16 +54,22 @@ function updatePatternPreviewUI() {
 
     document.getElementById('morseDotBtn').addEventListener('click', function () {
       morseInput += '.';
+      addMorse('•');
       syncMorseUI();
     });
+
     document.getElementById('morseDashBtn').addEventListener('click', function () {
       morseInput += '-';
+      addMorse('—');
       syncMorseUI();
     });
+
     document.getElementById('morseDeleteBtn').addEventListener('click', function () {
       morseInput = morseInput.slice(0, -1);
+      deleteMorse();
       syncMorseUI();
     });
+    
     document.getElementById('morseAddCharBtn').addEventListener('click', function () {
       const ch = REVERSE_MORSE_MAP[morseInput];
       if (ch !== undefined) {
@@ -92,6 +79,13 @@ function updatePatternPreviewUI() {
         const playBtnEl = document.getElementById('playBtn');
         if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
         if (typeof updateSendPreview === 'function') updateSendPreview();
+      } else if (messageInput.value.length <= 0 && window.tempMorse && ch === undefined) {
+        // Check for tactile dictionary conversion in Morse mode
+        var word = MORSE_TO_WORD[window.tempMorse];
+        if (word) {
+          messageInput.value = word;
+          window.tempMorse = '';
+        }
       }
       morseInput = '';
       syncMorseUI();
@@ -110,25 +104,19 @@ function updatePatternPreviewUI() {
       var playBtnEl = document.getElementById('playBtn');
       if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
       updateSendPreview();
-  
-  // Update Morse Preview Immediately
-  updatePatternPreviewUI();
+      updatePatternPreviewUI();
     });
     document.getElementById('morseBackspaceBtn').addEventListener('click', function () {
       if (messageInput.value.length > 0) {
         messageInput.value = messageInput.value.slice(0, -1);
         syncMorseUI();
-    
-    // Update Morse Preview Immediately
-    updatePatternPreviewUI();
+      updatePatternPreviewUI();
       }
     });
     document.getElementById('morseClearBtn').addEventListener('click', function () {
       messageInput.value = '';
       syncMorseUI();
-  
-  // Update Morse Preview Immediately
-  updatePatternPreviewUI();
+      updatePatternPreviewUI();
     });
     syncMorseUI();
   });
@@ -156,6 +144,90 @@ function updatePatternPreviewUI() {
     CHAR_PAUSE: 300,
     WORD_PAUSE: 500
   };
+  const TACTILE_DICTIONARY = {
+    "YA": ".",
+    "TIDAK": "-",
+    "MUNGKIN": "••—•",
+    "TIDAK TAHU": "———•",
+    "MENGERTI": "•—••",
+    "TIDAK MENGERTI": "—•••",
+    "MAKAN": "••",
+    "MINUM": "——",
+    "MANDI": "•—",
+    "TIDUR": "—•",
+    "TOILET": "•••—",
+    "OBAT": "——•—",
+    "DUDUK": "•——",
+    "BERDIRI": "—••",
+    "LAPAR": "•••",
+    "HAUS": "———",
+    "SAKIT": "•—•",
+    "CAPEK": "—•—",
+    "DINGIN": "••—",
+    "PANAS": "——•",
+    "PUSING": "•——•",
+    "SESAK": "—•••",
+    "SENANG": "•—••",
+    "SEDIH": "—••—",
+    "TAKUT": "••—•",
+    "MARAH": "——••",
+    "TENANG": "•——",
+    "GELISAH": "—••",
+    "TOLONG": "••••",
+    "DARURAT": "————",
+    "PULANG": "•——•",
+    "BUTUH BANTUAN": "—••—",
+    "ULANGI": "••——",
+    "SELESAI": "——••",
+    "DATANG": "•—••",
+    "PERGI": "—•——",
+    "DENGARKAN": "•—•—",
+    "TUNGGU": "—•••",
+    "CEPAT": "••—•",
+    "PELAN": "———•",
+    "LAGI": "•——•",
+    "SEKARANG": "•••—",
+    "NANTI": "—••—",
+    "PAGI": "•——•",
+    "MALAM": "—•—•"
+  };
+  // Reverse map for Morse to word (normalized)
+  const MORSE_TO_WORD = {};
+  for (let word in TACTILE_DICTIONARY) {
+    let morse = TACTILE_DICTIONARY[word].replace(/•/g, '.').replace(/—/g, '-');
+    MORSE_TO_WORD[morse] = word;
+  }
+
+  // --- Helper: Update Morse Preview UI ---
+  function updatePatternPreviewUI() {
+    var text = messageInput.value;
+    var previewSection = document.getElementById('previewSection');
+    var patternPreviewEl = document.getElementById('patternPreview');
+    var sendBtn = document.getElementById('sendBtn');
+    var playBtn = document.getElementById('playBtn');
+    var longWarn = document.getElementById('longMessageWarning');
+
+    if (charCount) {
+      charCount.textContent = text.length;
+      charCount.className = text.length > 900 ? 'text-xs text-amber-600 mt-1 text-right' : 'text-xs text-stone-400 mt-1 text-right';
+    }
+
+    if (longWarn) {
+      longWarn.classList.toggle('hidden', text.length < 200);
+    }
+
+    if (previewSection && patternPreviewEl) {
+      if (text.length > 0) {
+        previewSection.classList.remove('hidden');
+        patternPreviewEl.textContent = getPatternPreview(text);
+      } else {
+        previewSection.classList.add('hidden');
+      }
+    }
+
+    if (sendBtn) sendBtn.disabled = !isConnected() || !text.trim();
+    if (playBtn) playBtn.disabled = !text.trim();
+  }
 
   function textToVibrationPattern(text) {
     const patterns = [];
@@ -400,7 +472,7 @@ function updatePatternPreviewUI() {
 
     ws.onclose = function (event) {
       ws = null;
-      setStatus('', '○ Terputus');
+      setStatus('', 'Terputus');
       document.getElementById('connectBtn').textContent = '🔗 Hubungkan';
       document.getElementById('connectBtn').disabled = false;
       document.getElementById('messagesSection').classList.add('hidden');
@@ -763,6 +835,14 @@ function updatePatternPreviewUI() {
 
     document.getElementById('sendBtn').addEventListener('click', function () {
       var text = validateMessage(messageInput.value);
+      // Check for tactile dictionary conversion in Morse mode
+      if (text.length === 1 && window.tempMorse) {
+        var word = MORSE_TO_WORD[window.tempMorse];
+        if (word) {
+          text = word;
+          window.tempMorse = '';
+        }
+      }
       if (!text || !isConnected()) {
         if (text && text.length > 1000) alert('Pesan terlalu panjang (max 1000 karakter)');
         return;
