@@ -298,7 +298,91 @@
     }
     return patterns;
   }
-  // --- Vibration (Web API) ---
+  // --- Audio (Web Audio API) ---
+  let audioContext = null;
+  let audioSettings = { enabled: true, volume: 0.3, dotFrequency: 800, dashFrequency: 600 };
+
+  function initAudioContext() {
+    if (!audioContext && typeof AudioContext !== 'undefined') {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      // Resume audio context if suspended (required by some browsers)
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+    }
+    return audioContext;
+  }
+
+  function isAudioSupported() {
+    return typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined';
+  }
+
+  function playTone(frequency, duration, volume = audioSettings.volume) {
+    if (!audioSettings.enabled || !isAudioSupported()) return Promise.resolve();
+
+    const ctx = initAudioContext();
+    if (!ctx) return Promise.resolve();
+
+    return new Promise((resolve) => {
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.01);
+      gainNode.gain.setValueAtTime(volume, ctx.currentTime + duration / 1000 - 0.01);
+      gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + duration / 1000);
+
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + duration / 1000);
+
+      oscillator.onended = () => resolve();
+    });
+  }
+
+  function playAudioPattern(patterns, onProgress, speedOverride) {
+    if (!audioSettings.enabled || !isAudioSupported()) {
+      if (onProgress) onProgress({ current: 0, total: patterns.length });
+      return Promise.resolve();
+    }
+
+    const speedMultiplier = speedOverride !== undefined ? speedOverride : (settings.vibrationSpeed || 1.0);
+
+    return patterns.reduce((promise, pattern, index) => {
+      return promise.then(() => {
+        if (pattern.type === 'vibrate') {
+          const frequency = pattern.duration >= DURATIONS.LONG ? audioSettings.dashFrequency : audioSettings.dotFrequency;
+          return playTone(frequency, pattern.duration * speedMultiplier, audioSettings.volume);
+        } else if (pattern.type === 'pause') {
+          return new Promise(resolve => setTimeout(resolve, pattern.duration * speedMultiplier));
+        }
+        return Promise.resolve();
+      }).then(() => {
+        if (onProgress) {
+          onProgress({
+            current: index + 1,
+            total: patterns.length,
+            pattern: pattern
+          });
+        }
+      });
+    }, Promise.resolve());
+  }
+
+  function testAudio() {
+    const testPattern = [
+      { type: 'vibrate', duration: 200 },
+      { type: 'pause', duration: 100 },
+      { type: 'vibrate', duration: 400 }
+    ];
+    playAudioPattern(testPattern);
+  }
+// --- Vibration (Web API) ---
   function isVibrationSupported() {
     return typeof navigator !== 'undefined' && navigator.vibrate;
   }
@@ -308,7 +392,7 @@
   let settings = { vibrationIntensity: 1.0, vibrationSpeed: 1.0, autoPlay: true };
 
   function playVibrationPattern(patterns, onProgress, speedOverride) {
-    if (!isVibrationSupported()) {
+    if (!isVibrationSupported() && !isAudioSupported()) {
       if (onProgress) onProgress({ current: 0, total: patterns.length });
       return Promise.resolve();
     }
@@ -324,21 +408,32 @@
     }
     
     isPlayingVibration = true;
-    navigator.vibrate(arr);
+    
+    // Play vibration if supported
+    if (isVibrationSupported()) {
+      navigator.vibrate(arr);
+    }
+    
+    // Play audio if enabled
+    const audioPromise = playAudioPattern(patterns, null, speedOverride);
+    
     if (onProgress) onProgress({ current: patterns.length, total: patterns.length });
     const totalMs = arr.reduce((a, b) => a + b, 0);
     
-    return new Promise(function (resolve) {
-      setTimeout(() => {
-        isPlayingVibration = false;
-        resolve();
-        // Play next in queue
-        if (vibrationQueue.length > 0) {
-          const next = vibrationQueue.shift();
-          playVibrationPattern(next.patterns.map(d => ({ duration: d })), next.onProgress).then(next.resolve);
-        }
-      }, totalMs);
-    });
+    return Promise.all([
+      audioPromise,
+      new Promise(function (resolve) {
+        setTimeout(() => {
+          isPlayingVibration = false;
+          resolve();
+          // Play next in queue
+          if (vibrationQueue.length > 0) {
+            const next = vibrationQueue.shift();
+            playVibrationPattern(next.patterns.map(d => ({ duration: d })), next.onProgress).then(next.resolve);
+          }
+        }, totalMs);
+      })
+    ]).then(() => undefined);
   }
 
   function stopVibration() {
@@ -351,11 +446,24 @@
 
   // Putar pola mentah (array ms) — untuk darurat, role, mood
   function playRawPattern(arr) {
-    if (!isVibrationSupported() || !arr.length) return Promise.resolve();
-    navigator.vibrate(arr);
-    return new Promise(function(resolve) {
-      setTimeout(resolve, arr.reduce(function(a, b) { return a + b; }, 0));
-    });
+    if ((!isVibrationSupported() && !isAudioSupported()) || !arr.length) return Promise.resolve();
+    
+    // Play vibration if supported
+    if (isVibrationSupported()) {
+      navigator.vibrate(arr);
+    }
+    
+    // Play audio if enabled - convert raw array to pattern format
+    const audioPromise = audioSettings.enabled && isAudioSupported() ? 
+      playTone(audioSettings.dashFrequency, arr.reduce((a, b) => a + b, 0), audioSettings.volume) : 
+      Promise.resolve();
+    
+    return Promise.all([
+      audioPromise,
+      new Promise(function(resolve) {
+        setTimeout(resolve, arr.reduce(function(a, b) { return a + b; }, 0));
+      })
+    ]).then(() => undefined);
   }
   // --- WebSocket ---
   function getDefaultWsUrl() {
@@ -701,14 +809,28 @@
       if (settings.darkMode) {
         document.documentElement.classList.add('dark');
       }
+      // Load audio settings
+      if (settings.audioEnabled !== undefined) {
+        audioSettings.enabled = settings.audioEnabled;
+      }
     } else {
       // Fallback jika SettingsManager belum load
       setTimeout(() => {
         if (window.SettingsManager) {
           settings = window.SettingsManager.loadSettings();
+          // Load audio settings in fallback
+          if (settings.audioEnabled !== undefined) {
+            audioSettings.enabled = settings.audioEnabled;
+          }
         }
       }, 100);
     }
+
+    // Initialize audio context on first user interaction
+    document.addEventListener('click', function initAudioOnFirstClick() {
+      initAudioContext();
+      document.removeEventListener('click', initAudioOnFirstClick);
+    }, { once: true });
 
     loadMessageHistory();
 
@@ -920,7 +1042,11 @@
       var progressSection = document.getElementById('progressSection');
       var progressText = document.getElementById('progressText');
       progressSection.classList.remove('hidden');
-      progressText.textContent = 'Memutar getaran...';
+      var outputTypes = [];
+      if (isVibrationSupported()) outputTypes.push('getaran');
+      if (audioSettings.enabled && isAudioSupported()) outputTypes.push('audio');
+      var outputText = outputTypes.length > 0 ? outputTypes.join(' + ') : 'output';
+      progressText.textContent = 'Memutar ' + outputText + '...';
       playVibrationPattern(patterns, function (p) {
         progressText.textContent = 'Memutar: ' + p.current + ' / ' + p.total;
         if (p.current >= p.total) progressSection.classList.add('hidden');
@@ -929,6 +1055,7 @@
 
     document.getElementById('testBtn').addEventListener('click', function () {
       testVibration();
+      testAudio();
     });
 
     document.getElementById('markReadBtn').addEventListener('click', function () {
@@ -1161,7 +1288,11 @@
         var progressSection = document.getElementById('progressSection');
         var progressText = document.getElementById('progressText');
         if (progressSection) progressSection.classList.remove('hidden');
-        if (progressText) progressText.textContent = 'Memutar getaran preview…';
+        var outputTypes = [];
+        if (isVibrationSupported()) outputTypes.push('getaran');
+        if (audioSettings.enabled && isAudioSupported()) outputTypes.push('audio');
+        var outputText = outputTypes.length > 0 ? outputTypes.join(' + ') : 'output';
+        if (progressText) progressText.textContent = 'Memutar ' + outputText + ' preview…';
         playVibrationPattern(patterns, function (p) {
           if (progressText) progressText.textContent = 'Memutar: ' + p.current + ' / ' + p.total;
           if (p.current >= p.total && progressSection) progressSection.classList.add('hidden');
