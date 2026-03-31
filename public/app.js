@@ -263,6 +263,10 @@
         preview += '[SPACE] ';
         continue;
       }
+      if (char === '\n') {
+        preview += '[ENTER] ';
+        continue;
+      }
       const morse = MORSE_MAP[char];
       if (!morse) {
         preview += '[?] ';
@@ -538,8 +542,12 @@
     sender.textContent = data.from ? (data.from.name || 'Anonymous') : 'Saya';
     
     const text = document.createElement('p');
-    text.className = 'text-sm text-stone-900 dark:text-stone-100 mb-0.5 break-words';
+    text.className = 'text-sm text-stone-900 dark:text-stone-100 mb-0.5 break-words whitespace-pre-wrap';
     text.textContent = data.text || '';
+    
+    const morse = document.createElement('p');
+    morse.className = 'text-xs text-stone-500 dark:text-stone-400 font-mono mb-0.5 break-words whitespace-pre-wrap';
+    morse.textContent = textToMorseWithSlashes(data.text || '');
     
     const timeEl = document.createElement('span');
     timeEl.className = 'text-xs text-stone-400 dark:text-stone-500';
@@ -548,6 +556,7 @@
     
     div.appendChild(sender);
     div.appendChild(text);
+    div.appendChild(morse);
     div.appendChild(timeEl);
     list.appendChild(div);
     
@@ -597,6 +606,23 @@
     div.textContent = s;
     return div.innerHTML;
   }
+
+  function textToMorseWithSlashes(text) {
+    if (!text) return '';
+    const upperText = text.toUpperCase();
+    const morseArray = [];
+    for (const char of upperText) {
+      if (char === ' ') {
+        morseArray.push('SPACE');
+      } else if (char === '\n') {
+        morseArray.push('ENTER');
+      } else if (MORSE_MAP[char]) {
+        morseArray.push(MORSE_MAP[char]);
+      }
+    }
+    return morseArray.join(' / ');
+  }
+
   // Validate & sanitize message
   function validateMessage(text) {
     if (!text || typeof text !== 'string') return null;
@@ -776,6 +802,24 @@
       var longWarn = document.getElementById('longMessageWarning');
       if (longWarn) longWarn.classList.toggle('hidden', text.length < 200);
       
+      // Auto-resize textarea: expand to 5 rows max when content overflows 2 rows
+      messageInput.style.height = 'auto'; // Reset height
+      var scrollHeight = messageInput.scrollHeight;
+      var computedStyle = getComputedStyle(messageInput);
+      var lineHeight = parseInt(computedStyle.lineHeight) || 18; // Fallback to 18px
+      var paddingTop = parseInt(computedStyle.paddingTop) || 0;
+      var paddingBottom = parseInt(computedStyle.paddingBottom) || 0;
+      
+      // Calculate height for 2 rows and 5 rows
+      var twoRowHeight = (lineHeight * 2) + paddingTop + paddingBottom;
+      var fiveRowHeight = (lineHeight * 5) + paddingTop + paddingBottom;
+      
+      if (scrollHeight > twoRowHeight) {
+        messageInput.style.height = Math.min(scrollHeight, fiveRowHeight) + 'px';
+      } else {
+        messageInput.style.height = twoRowHeight + 'px';
+      }
+      
       // Debounce preview update
       clearTimeout(updateTimeout);
       updateTimeout = setTimeout(function() {
@@ -802,6 +846,16 @@
       document.getElementById('sendBtn').disabled = !isConnected() || !text.trim();
       document.getElementById('playBtn').disabled = !text.trim();
     });
+
+    // Initialize textarea height
+    (function() {
+      var computedStyle = getComputedStyle(messageInput);
+      var lineHeight = parseInt(computedStyle.lineHeight) || 18;
+      var paddingTop = parseInt(computedStyle.paddingTop) || 0;
+      var paddingBottom = parseInt(computedStyle.paddingBottom) || 0;
+      var twoRowHeight = (lineHeight * 2) + paddingTop + paddingBottom;
+      messageInput.style.height = twoRowHeight + 'px';
+    })();
 
     function sendMessage(text, opts) {
       opts = opts || {};
