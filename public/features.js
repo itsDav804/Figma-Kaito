@@ -113,35 +113,16 @@ function renderDictionaryTab(tab) {
         <div class="font-mono text-lg bg-white dark:bg-stone-800 rounded p-2 mb-1">${item.pattern}</div>
         <div class="text-xs text-stone-400 dark:text-stone-500">Tap to preview vibration</div>
       `;
-      // Hapus event lama jika ada
-      box.onclick = null;
-      box.ontouchstart = null;
-      // Event utama: touchstart (HP) atau click (fallback)
-      const vibrateHandler = function(e) {
-        e.preventDefault();
+      box.addEventListener('click', function() {
         if (window.navigator && navigator.vibrate) {
           const vib = morsePatternToVibration(item.pattern);
-          try {
-            const ok = navigator.vibrate(vib);
-            if (ok === false) {
-              alert('Vibration gagal.\n\nCoba: \n- Pastikan browser mendukung getaran\n- Cek pengaturan getaran di HP\n- Coba buka lewat Chrome/Android\n- Jangan dalam mode hemat baterai\n\nLihat console log untuk detail.');
-              console.log('[Kaito] navigator.vibrate() return false, pola:', vib);
-            } else {
-              box.classList.add('ring', 'ring-emerald-400');
-              setTimeout(() => box.classList.remove('ring', 'ring-emerald-400'), 500);
-              console.log('[Kaito] Vibrasi dijalankan:', vib);
-            }
-          } catch (err) {
-            alert('Vibration error: ' + err);
-            console.error('[Kaito] navigator.vibrate error:', err);
-          }
+          navigator.vibrate(vib);
+          box.classList.add('ring', 'ring-emerald-400');
+          setTimeout(() => box.classList.remove('ring', 'ring-emerald-400'), 500);
         } else {
-          alert('Vibration API tidak didukung di perangkat ini.\n\nCoba buka lewat Chrome/Android, dan pastikan fitur getaran aktif.');
-          console.warn('[Kaito] navigator.vibrate tidak tersedia');
+          alert('Vibration API tidak didukung di perangkat ini');
         }
-      };
-      box.addEventListener('touchstart', vibrateHandler, {passive: false});
-      box.addEventListener('click', vibrateHandler);
+      });
       content.appendChild(box);
     });
   }
