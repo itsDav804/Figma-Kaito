@@ -76,8 +76,8 @@
         messageInput.value += ch;
         if (charCount) charCount.textContent = messageInput.value.length;
         document.getElementById('sendBtn').disabled = !messageInput.value.trim();
-        const playBtnEl = document.getElementById('playBtn');
-        if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
+        // const playBtnEl = document.getElementById('playBtn');
+        // if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
         if (typeof updateSendPreview === 'function') updateSendPreview();
       } else if (messageInput.value.length <= 0 && window.tempMorse && ch === undefined) {
         // Check for tactile dictionary conversion in Morse mode
@@ -101,8 +101,8 @@
       messageInput.value = messageInput.value + ' ';
       if (charCount) charCount.textContent = messageInput.value.length;
       document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
-      var playBtnEl = document.getElementById('playBtn');
-      if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
+      // var playBtnEl = document.getElementById('playBtn');
+      // if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
       updateSendPreview();
       updatePatternPreviewUI();
     });
@@ -204,7 +204,7 @@
     var previewSection = document.getElementById('previewSection');
     var patternPreviewEl = document.getElementById('patternPreview');
     var sendBtn = document.getElementById('sendBtn');
-    var playBtn = document.getElementById('playBtn');
+    // var playBtn = document.getElementById('playBtn');
     var longWarn = document.getElementById('longMessageWarning');
 
     if (charCount) {
@@ -226,7 +226,7 @@
     }
 
     if (sendBtn) sendBtn.disabled = !isConnected() || !text.trim();
-    if (playBtn) playBtn.disabled = !text.trim();
+    // if (playBtn) playBtn.disabled = !text.trim();
   }
 
   function textToVibrationPattern(text) {
@@ -966,7 +966,7 @@
       }
       
       document.getElementById('sendBtn').disabled = !isConnected() || !text.trim();
-      document.getElementById('playBtn').disabled = !text.trim();
+      // document.getElementById('playBtn').disabled = !text.trim();
     });
 
     // Initialize textarea height
@@ -1030,7 +1030,7 @@
       if (charCount) charCount.textContent = '0';
       document.getElementById('previewSection').classList.add('hidden');
       document.getElementById('sendBtn').disabled = true;
-      document.getElementById('playBtn').disabled = true;
+      // document.getElementById('playBtn').disabled = true;
       if (isConnected()) send({ type: 'typing', data: { isTyping: false } });
     });
 
@@ -1053,10 +1053,10 @@
       });
     });
 
-    document.getElementById('testBtn').addEventListener('click', function () {
-      testVibration();
-      testAudio();
-    });
+    // document.getElementById('testBtn').addEventListener('click', function () {
+    //   testVibration();
+    //   testAudio();
+    // });
 
     document.getElementById('markReadBtn').addEventListener('click', function () {
       if (lastReceivedMessageId && isConnected()) {
@@ -1090,139 +1090,139 @@
     //   if (isConnected()) sendMessage('BUTUH BANTUAN DARURAT', { emergency: true });
     // });
 
-    var voiceBtn = document.getElementById('voiceBtn');
-    if (voiceBtn && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-      var Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      var recognition = new Recognition();
-      recognition.lang = 'id-ID';
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      var voiceListening = false;
-      function voiceVibrateStart() {
-        if (isVibrationSupported() && settings.bothDeafBlind) navigator.vibrate(150);
-      }
-      function voiceVibrateStop() {
-        if (isVibrationSupported() && settings.bothDeafBlind) navigator.vibrate([150, 80, 150]);
-      }
-      function syncVoiceButtonState() {
-        var vbd = document.getElementById('voiceBtnDeafBlind');
-        if (vbd) {
-          vbd.textContent = voiceBtn.textContent;
-          vbd.disabled = voiceBtn.disabled;
-          vbd.setAttribute('aria-label', voiceBtn.getAttribute('aria-label') || 'Rekam suara');
-        }
-      }
-      recognition.onresult = function (e) {
-        var result = e.results[e.results.length - 1];
-        if (result.isFinal && result.length > 0) {
-          var t = result[0].transcript;
-          if (t) {
-            messageInput.value = (messageInput.value + (messageInput.value ? ' ' : '') + t).trim();
-            if (charCount) charCount.textContent = messageInput.value.length;
-            document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
-            var playBtnEl = document.getElementById('playBtn');
-            if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
-            var previewEl = document.getElementById('sendPreviewText');
-            var sendDb = document.getElementById('sendBtnDeafBlind');
-            var playPreviewBtn = document.getElementById('playPreviewVibrationBtn');
-            if (previewEl) previewEl.textContent = messageInput.value.trim() || '— Rekam suara, teks akan muncul di sini —';
-            if (sendDb) sendDb.disabled = !isConnected() || !messageInput.value.trim();
-            if (playPreviewBtn) playPreviewBtn.disabled = !messageInput.value.trim();
-            if (settings.bothDeafBlind && settings.autoSendAfterVoice && isConnected() && messageInput.value.trim()) {
-              setTimeout(function () {
-                var txt = messageInput.value.trim();
-                if (txt) sendMessage(txt);
-                messageInput.value = '';
-                if (charCount) charCount.textContent = '0';
-                document.getElementById('sendBtn').disabled = true;
-                if (playBtnEl) playBtnEl.disabled = true;
-                if (previewEl) previewEl.textContent = '— Rekam suara, teks akan muncul di sini —';
-                if (sendDb) sendDb.disabled = true;
-                var playPrevBtn = document.getElementById('playPreviewVibrationBtn');
-                if (playPrevBtn) playPrevBtn.disabled = true;
-              }, 400);
-            }
-          }
-        }
-      };
-      recognition.onstart = function () {
-        voiceListening = true;
-        voiceBtn.textContent = '🔴 Stop (tap untuk berhenti)';
-        voiceBtn.disabled = false;
-        voiceBtn.setAttribute('aria-label', 'Rekam aktif. Sentuh lagi untuk stop.');
-        syncVoiceButtonState();
-        voiceVibrateStart();
-      };
-      recognition.onend = function () {
-        voiceListening = false;
-        voiceBtn.textContent = '🎤 Rekam';
-        voiceBtn.disabled = false;
-        voiceBtn.setAttribute('aria-label', 'Rekam suara. Sentuh untuk mulai.');
-        syncVoiceButtonState();
-        voiceVibrateStop();
-      };
-      recognition.onerror = function (e) {
-        voiceListening = false;
-        voiceBtn.disabled = false;
-        voiceBtn.textContent = '🎤 Rekam';
-        voiceBtn.setAttribute('aria-label', 'Rekam suara');
-        syncVoiceButtonState();
-        if (e.error === 'not-allowed') showError('Izinkan akses mikrofon di pengaturan browser/situs ini, lalu coba lagi.');
-        else if (e.error === 'no-speech') showError('Tidak ada suara terdeteksi. Coba lagi.');
-        else if (e.error === 'network') showError('Rekam butuh koneksi internet.');
-        else if (e.error === 'aborted') { /* user stop, no message */ }
-        else showError('Rekam gagal: ' + (e.error || 'unknown'));
-      };
-      voiceBtn.addEventListener('click', function () {
-        if (voiceListening) {
-          try { recognition.stop(); } catch (err) {}
-          return;
-        }
-        if (voiceBtn.disabled) return;
-        if (!window.isSecureContext) {
-          showError('Rekam suara hanya bisa dipakai di HTTPS. Buka alamat dengan https:// (bukan http://).');
-          return;
-        }
-        voiceBtn.disabled = true;
-        voiceBtn.textContent = '⏳ Meminta mikrofon...';
-        var startRecognition = function () {
-          voiceBtn.textContent = '🎤 Rekam';
-          voiceBtn.disabled = false;
-          var vbd = document.getElementById('voiceBtnDeafBlind');
-          if (vbd) { vbd.textContent = '🎤 Rekam'; vbd.disabled = false; }
-          try {
-            recognition.start();
-          } catch (err) {
-            voiceBtn.textContent = '🎤 Rekam';
-            if (vbd) vbd.textContent = '🎤 Rekam';
-            showError('Rekam tidak bisa dimulai. Coba tutup lalu buka lagi halaman ini.');
-          }
-        };
-        if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
-          navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(function (stream) {
-              stream.getTracks().forEach(function (t) { t.stop(); });
-              startRecognition();
-            })
-            .catch(function (err) {
-              voiceBtn.disabled = false;
-              voiceBtn.textContent = '🎤 Rekam';
-              var vbd = document.getElementById('voiceBtnDeafBlind');
-              if (vbd) { vbd.disabled = false; vbd.textContent = '🎤 Rekam'; }
-              if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                showError('Akses mikrofon ditolak. Izinkan mikrofon untuk situs ini di pengaturan browser.');
-              } else {
-                showError('Tidak bisa akses mikrofon: ' + (err.message || err.name));
-              }
-            });
-        } else {
-          startRecognition();
-        }
-      });
-    } else if (voiceBtn) {
-      voiceBtn.disabled = true;
-      voiceBtn.title = 'Rekam suara tidak didukung di browser ini. Pakai Chrome/Edge di Android, dan buka lewat HTTPS.';
-    }
+    // var voiceBtn = document.getElementById('voiceBtn');
+    // if (voiceBtn && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+    //   var Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    //   var recognition = new Recognition();
+    //   recognition.lang = 'id-ID';
+    //   recognition.continuous = false;
+    //   recognition.interimResults = true;
+    //   var voiceListening = false;
+    //   function voiceVibrateStart() {
+    //     if (isVibrationSupported() && settings.bothDeafBlind) navigator.vibrate(150);
+    //   }
+    //   function voiceVibrateStop() {
+    //     if (isVibrationSupported() && settings.bothDeafBlind) navigator.vibrate([150, 80, 150]);
+    //   }
+    //   function syncVoiceButtonState() {
+    //     var vbd = document.getElementById('voiceBtnDeafBlind');
+    //     if (vbd) {
+    //       vbd.textContent = voiceBtn.textContent;
+    //       vbd.disabled = voiceBtn.disabled;
+    //       vbd.setAttribute('aria-label', voiceBtn.getAttribute('aria-label') || 'Rekam suara');
+    //     }
+    //   }
+    //   recognition.onresult = function (e) {
+    //     var result = e.results[e.results.length - 1];
+    //     if (result.isFinal && result.length > 0) {
+    //       var t = result[0].transcript;
+    //       if (t) {
+    //         messageInput.value = (messageInput.value + (messageInput.value ? ' ' : '') + t).trim();
+    //         if (charCount) charCount.textContent = messageInput.value.length;
+    //         document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
+    //         // var playBtnEl = document.getElementById('playBtn');
+    //         // if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
+    //         var previewEl = document.getElementById('sendPreviewText');
+    //         var sendDb = document.getElementById('sendBtnDeafBlind');
+    //         var playPreviewBtn = document.getElementById('playPreviewVibrationBtn');
+    //         if (previewEl) previewEl.textContent = messageInput.value.trim() || '— Rekam suara, teks akan muncul di sini —';
+    //         if (sendDb) sendDb.disabled = !isConnected() || !messageInput.value.trim();
+    //         if (playPreviewBtn) playPreviewBtn.disabled = !messageInput.value.trim();
+    //         if (settings.bothDeafBlind && settings.autoSendAfterVoice && isConnected() && messageInput.value.trim()) {
+    //           setTimeout(function () {
+    //             var txt = messageInput.value.trim();
+    //             if (txt) sendMessage(txt);
+    //             messageInput.value = '';
+    //             if (charCount) charCount.textContent = '0';
+    //             document.getElementById('sendBtn').disabled = true;
+    //             // if (playBtnEl) playBtnEl.disabled = true;
+    //             if (previewEl) previewEl.textContent = '— Rekam suara, teks akan muncul di sini —';
+    //             if (sendDb) sendDb.disabled = true;
+    //             var playPrevBtn = document.getElementById('playPreviewVibrationBtn');
+    //             if (playPrevBtn) playPrevBtn.disabled = true;
+    //           }, 400);
+    //         }
+    //       }
+    //     }
+    //   };
+    //   recognition.onstart = function () {
+    //     voiceListening = true;
+    //     voiceBtn.textContent = '🔴 Stop (tap untuk berhenti)';
+    //     voiceBtn.disabled = false;
+    //     voiceBtn.setAttribute('aria-label', 'Rekam aktif. Sentuh lagi untuk stop.');
+    //     syncVoiceButtonState();
+    //     voiceVibrateStart();
+    //   };
+    //   recognition.onend = function () {
+    //     voiceListening = false;
+    //     voiceBtn.textContent = '🎤 Rekam';
+    //     voiceBtn.disabled = false;
+    //     voiceBtn.setAttribute('aria-label', 'Rekam suara. Sentuh untuk mulai.');
+    //     syncVoiceButtonState();
+    //     voiceVibrateStop();
+    //   };
+    //   recognition.onerror = function (e) {
+    //     voiceListening = false;
+    //     voiceBtn.disabled = false;
+    //     voiceBtn.textContent = '🎤 Rekam';
+    //     voiceBtn.setAttribute('aria-label', 'Rekam suara');
+    //     syncVoiceButtonState();
+    //     if (e.error === 'not-allowed') showError('Izinkan akses mikrofon di pengaturan browser/situs ini, lalu coba lagi.');
+    //     else if (e.error === 'no-speech') showError('Tidak ada suara terdeteksi. Coba lagi.');
+    //     else if (e.error === 'network') showError('Rekam butuh koneksi internet.');
+    //     else if (e.error === 'aborted') { /* user stop, no message */ }
+    //     else showError('Rekam gagal: ' + (e.error || 'unknown'));
+    //   };
+    //   voiceBtn.addEventListener('click', function () {
+    //     if (voiceListening) {
+    //       try { recognition.stop(); } catch (err) {}
+    //       return;
+    //     }
+    //     if (voiceBtn.disabled) return;
+    //     if (!window.isSecureContext) {
+    //       showError('Rekam suara hanya bisa dipakai di HTTPS. Buka alamat dengan https:// (bukan http://).');
+    //       return;
+    //     }
+    //     voiceBtn.disabled = true;
+    //     voiceBtn.textContent = '⏳ Meminta mikrofon...';
+    //     var startRecognition = function () {
+    //       voiceBtn.textContent = '🎤 Rekam';
+    //       voiceBtn.disabled = false;
+    //       var vbd = document.getElementById('voiceBtnDeafBlind');
+    //       if (vbd) { vbd.textContent = '🎤 Rekam'; vbd.disabled = false; }
+    //       try {
+    //         recognition.start();
+    //       } catch (err) {
+    //         voiceBtn.textContent = '🎤 Rekam';
+    //         if (vbd) vbd.textContent = '🎤 Rekam';
+    //         showError('Rekam tidak bisa dimulai. Coba tutup lalu buka lagi halaman ini.');
+    //       }
+    //     };
+    //     if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+    //       navigator.mediaDevices.getUserMedia({ audio: true })
+    //         .then(function (stream) {
+    //           stream.getTracks().forEach(function (t) { t.stop(); });
+    //           startRecognition();
+    //         })
+    //         .catch(function (err) {
+    //           voiceBtn.disabled = false;
+    //           voiceBtn.textContent = '🎤 Rekam';
+    //           var vbd = document.getElementById('voiceBtnDeafBlind');
+    //           if (vbd) { vbd.disabled = false; vbd.textContent = '🎤 Rekam'; }
+    //           if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+    //             showError('Akses mikrofon ditolak. Izinkan mikrofon untuk situs ini di pengaturan browser.');
+    //           } else {
+    //             showError('Tidak bisa akses mikrofon: ' + (err.message || err.name));
+    //           }
+    //         });
+    //     } else {
+    //       startRecognition();
+    //     }
+    //   });
+    // } else if (voiceBtn) {
+    //   voiceBtn.disabled = true;
+    //   voiceBtn.title = 'Rekam suara tidak didukung di browser ini. Pakai Chrome/Edge di Android, dan buka lewat HTTPS.';
+    // }
 
     document.getElementById('senderRole').addEventListener('change', function () {
       if (isConnected()) send({ type: 'set_name', data: { name: userName, role: this.value || undefined } });
@@ -1242,12 +1242,12 @@
       if (window.SettingsManager) window.SettingsManager.updateSetting('bothDeafBlind', on);
       settings.bothDeafBlind = on;
       if (appBody) appBody.classList.toggle('mode-both-deafblind', on);
-      var vb = document.getElementById('voiceBtn');
+      // var vb = document.getElementById('voiceBtn');
       if (vb) vb.classList.toggle('advanced-only', !on);
     });
     if (appBody) appBody.classList.toggle('mode-both-deafblind', !!settings.bothDeafBlind);
-    var voiceBtnVisibility = document.getElementById('voiceBtn');
-    if (voiceBtnVisibility) voiceBtnVisibility.classList.toggle('advanced-only', !settings.bothDeafBlind);
+    // var voiceBtnVisibility = document.getElementById('voiceBtn');
+    // if (voiceBtnVisibility) voiceBtnVisibility.classList.toggle('advanced-only', !settings.bothDeafBlind);
 
     function updateSendPreview() {
       var preview = document.getElementById('sendPreviewText');
@@ -1263,8 +1263,8 @@
       messageInput.value = '';
       if (charCount) charCount.textContent = '0';
       document.getElementById('sendBtn').disabled = true;
-      var playBtnEl = document.getElementById('playBtn');
-      if (playBtnEl) playBtnEl.disabled = true;
+      // var playBtnEl = document.getElementById('playBtn');
+      // if (playBtnEl) playBtnEl.disabled = true;
       updateSendPreview();
     });
     document.getElementById('sendBtnDeafBlind').addEventListener('click', function () {
@@ -1274,8 +1274,8 @@
       messageInput.value = '';
       if (charCount) charCount.textContent = '0';
       document.getElementById('sendBtn').disabled = true;
-      var playBtnEl = document.getElementById('playBtn');
-      if (playBtnEl) playBtnEl.disabled = true;
+      // var playBtnEl = document.getElementById('playBtn');
+      // if (playBtnEl) playBtnEl.disabled = true;
       updateSendPreview();
     });
     var playPreviewVibrationBtn = document.getElementById('playPreviewVibrationBtn');
@@ -1299,12 +1299,12 @@
         });
       });
     }
-    var voiceBtnDeafBlind = document.getElementById('voiceBtnDeafBlind');
-    if (voiceBtnDeafBlind && voiceBtn) voiceBtnDeafBlind.addEventListener('click', function () { voiceBtn.click(); });
-    if (autoSendAfterVoiceEl) autoSendAfterVoiceEl.addEventListener('change', function () {
-      if (window.SettingsManager) window.SettingsManager.updateSetting('autoSendAfterVoice', this.checked);
-      settings.autoSendAfterVoice = this.checked;
-    });
+    // var voiceBtnDeafBlind = document.getElementById('voiceBtnDeafBlind');
+    // if (voiceBtnDeafBlind && voiceBtn) voiceBtnDeafBlind.addEventListener('click', function () { voiceBtn.click(); });
+    // if (autoSendAfterVoiceEl) autoSendAfterVoiceEl.addEventListener('change', function () {
+    //   if (window.SettingsManager) window.SettingsManager.updateSetting('autoSendAfterVoice', this.checked);
+    //   settings.autoSendAfterVoice = this.checked;
+    // });
 
     // --- Input Braille 6 titik (on-screen keyboard) ---
     // var brailleCell = [0, 0, 0, 0, 0, 0];

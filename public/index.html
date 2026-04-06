@@ -59,6 +59,7 @@
           <!-- Removed: simple/advanced toggle for universal layout -->
         </label>
       </div>
+      
       <div class="flex gap-2">
         <button type="button" id="darkModeBtn" onclick="toggleDarkMode()" class="p-3 rounded-xl bg-stone-200 dark:bg-stone-700 text-lg" aria-label="Toggle dark mode" title="Ganti tema gelap/terang">
           <span id="darkModeIconMoon" class="dark:hidden">🌙</span>
@@ -168,13 +169,13 @@
           </div>
           <div class="flex gap-2 flex-wrap both-deafblind-hide">
             <button type="button" id="sendBtn" disabled
-              class="flex-1 min-w-[120px] min-h-[56px] py-4 rounded-2xl bg-emerald-700 dark:bg-emerald-600 text-white font-bold text-xl hover:bg-emerald-600 dark:hover:bg-emerald-500 disabled:opacity-50 disabled:pointer-events-none active:scale-[1] transition"
+              class=" w-full min-h-[56px] py-4 rounded-2xl bg-emerald-700 dark:bg-emerald-600 text-white font-bold text-xl hover:bg-emerald-600 dark:hover:bg-emerald-500 disabled:opacity-50 disabled:pointer-events-none active:scale-[1] transition"
               aria-label="Kirim pesan">
               Kirim
             </button>
-            <button type="button" id="playBtn" disabled class="advanced-only flex-1 min-w-[170px] py-2.5 rounded-lg border-2 border-emerald-700 dark:border-emerald-600 text-emerald-700 dark:text-emerald-400 font-semibold text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.99] transition" aria-label="Putar getaran & suara lokal">Putar getaran & suara</button>
-            <button type="button" id="testBtn" class="advanced-only py-2.5 px-4 rounded-lg border border-stone-300 dark:border-stone-600 text-stone-600 dark:text-stone-400 font-medium text-sm hover:bg-stone-50 dark:hover:bg-stone-700 active:scale-[0.99] transition" aria-label="Test getaran">Test</button>
-            <button type="button" id="voiceBtn" class="advanced-only py-2.5 px-4 rounded-lg border border-stone-300 dark:border-stone-600 text-stone-600 dark:text-stone-400 font-medium text-sm hover:bg-stone-50 dark:hover:bg-stone-700 active:scale-[0.99] transition" aria-label="Rekam suara" title="Rekam suara → teks. Butuh HTTPS dan izin mikrofon.">🎤 Rekam</button>
+            <!-- <button type="button" id="playBtn" disabled class="advanced-only flex-1 min-w-[170px] py-2.5 rounded-lg border-2 border-emerald-700 dark:border-emerald-600 text-emerald-700 dark:text-emerald-400 font-semibold text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.99] transition" aria-label="Putar getaran & suara lokal">Putar getaran & suara</button> -->
+            <!-- <button type="button" id="testBtn" class="advanced-only py-2.5 px-4 rounded-lg border border-stone-300 dark:border-stone-600 text-stone-600 dark:text-stone-400 font-medium text-sm hover:bg-stone-50 dark:hover:bg-stone-700 active:scale-[0.99] transition" aria-label="Test getaran">Test</button> -->
+            <!-- <button type="button" id="voiceBtn" class="advanced-only py-2.5 px-4 rounded-lg border border-stone-300 dark:border-stone-600 text-stone-600 dark:text-stone-400 font-medium text-sm hover:bg-stone-50 dark:hover:bg-stone-700 active:scale-[0.99] transition" aria-label="Rekam suara" title="Rekam suara → teks. Butuh HTTPS dan izin mikrofon.">🎤 Rekam</button> -->
           </div>
         </div>
       </section>
