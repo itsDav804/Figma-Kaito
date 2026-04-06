@@ -79,6 +79,73 @@ function renderDictionaryTab(tab) {
   });
 }
 
+  // Fungsi untuk mengubah pola morse (•, —) menjadi array durasi getaran
+  function morsePatternToVibration(pattern) {
+    // Aturan: • = 100ms getar, — = 300ms getar, antar elemen 100ms jeda
+    const arr = [];
+    for (let i = 0; i < pattern.length; i++) {
+      if (pattern[i] === '•') {
+        arr.push(100); // getar
+      } else if (pattern[i] === '—') {
+        arr.push(300); // getar
+      } else {
+        continue;
+      }
+      // Tambah jeda jika bukan terakhir
+      if (i < pattern.length - 1 && (pattern[i+1] === '•' || pattern[i+1] === '—')) {
+        arr.push(100); // jeda antar getar
+      }
+    }
+    return arr;
+  }
+
+  function renderDictionaryTab(tab) {
+    const content = document.getElementById('dictContent');
+    if (!content) return;
+    content.innerHTML = '';
+    const items = TACTILE_DICTIONARY[tab] || [];
+    items.forEach(item => {
+      const box = document.createElement('div');
+      box.className = 'rounded-xl bg-stone-100 dark:bg-stone-700 p-4 mb-2 flex flex-col shadow cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition';
+      box.innerHTML = `
+        <div class="font-bold text-lg mb-2">${item.word}</div>
+        <div class="text-xs text-stone-500 dark:text-stone-400 mb-1">Tactile Pattern</div>
+        <div class="font-mono text-lg bg-white dark:bg-stone-800 rounded p-2 mb-1">${item.pattern}</div>
+        <div class="text-xs text-stone-400 dark:text-stone-500">Tap to preview vibration</div>
+      `;
+      // Hapus event lama jika ada
+      box.onclick = null;
+      box.ontouchstart = null;
+      // Event utama: touchstart (HP) atau click (fallback)
+      const vibrateHandler = function(e) {
+        e.preventDefault();
+        if (window.navigator && navigator.vibrate) {
+          const vib = morsePatternToVibration(item.pattern);
+          try {
+            const ok = navigator.vibrate(vib);
+            if (ok === false) {
+              alert('Vibration gagal.\n\nCoba: \n- Pastikan browser mendukung getaran\n- Cek pengaturan getaran di HP\n- Coba buka lewat Chrome/Android\n- Jangan dalam mode hemat baterai\n\nLihat console log untuk detail.');
+              console.log('[Kaito] navigator.vibrate() return false, pola:', vib);
+            } else {
+              box.classList.add('ring', 'ring-emerald-400');
+              setTimeout(() => box.classList.remove('ring', 'ring-emerald-400'), 500);
+              console.log('[Kaito] Vibrasi dijalankan:', vib);
+            }
+          } catch (err) {
+            alert('Vibration error: ' + err);
+            console.error('[Kaito] navigator.vibrate error:', err);
+          }
+        } else {
+          alert('Vibration API tidak didukung di perangkat ini.\n\nCoba buka lewat Chrome/Android, dan pastikan fitur getaran aktif.');
+          console.warn('[Kaito] navigator.vibrate tidak tersedia');
+        }
+      };
+      box.addEventListener('touchstart', vibrateHandler, {passive: false});
+      box.addEventListener('click', vibrateHandler);
+      content.appendChild(box);
+    });
+  }
+
 function setupDictionaryTabs() {
   const tabs = document.querySelectorAll('.dict-tab');
   if (!tabs.length) return;
