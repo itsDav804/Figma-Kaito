@@ -26,14 +26,8 @@
 
     // Temporary Morse storage
     window.tempMorse = '';
-
-    function addMorse(char) {
-      window.tempMorse += char === '•' ? '.' : '-';
-    }
-
-    function deleteMorse() {
-      window.tempMorse = window.tempMorse.slice(0, -1);
-    }
+  function addMorse(char) { window.tempMorse += char === '•' ? '.' : '-'; }
+  function deleteMorse() { window.tempMorse = window.tempMorse.slice(0, -1); }
 
     var morseInput = '';
     var messageInput = document.getElementById('messageInput');
@@ -42,10 +36,7 @@
     function syncMorseUI() {
       const morseInputPreview = document.getElementById('morseInputPreview');
       const morseResultPreview = document.getElementById('morseResultPreview');
-      if (morseInputPreview) {
-        morseInputPreview.textContent = morseInput || ' ';
-      }
-
+    if (morseInputPreview) morseInputPreview.textContent = morseInput || ' ';
       if (morseResultPreview) {
         const translatedChar = REVERSE_MORSE_MAP[morseInput] || '';
         morseResultPreview.textContent = translatedChar;
@@ -106,7 +97,7 @@
       if (messageInput.value.length > 0) {
         messageInput.value = messageInput.value.slice(0, -1);
         syncMorseUI();
-      updatePatternPreviewUI();
+        updatePatternPreviewUI();
       }
     });
     document.getElementById('morseClearBtn').addEventListener('click', function () {
@@ -235,16 +226,11 @@
       const morse = MORSE_MAP[char];
       if (!morse) continue;
       for (let j = 0; j < morse.length; j++) {
-        if (morse[j] === '.') {
-          patterns.push({ type: 'vibrate', duration: DURATIONS.SHORT });
-        } else if (morse[j] === '-') {
-          patterns.push({ type: 'vibrate', duration: DURATIONS.LONG });
-        }
-        if (j < morse.length - 1)
-          patterns.push({ type: 'pause', duration: DURATIONS.DOT_PAUSE });
+      if (morse[j] === '.') patterns.push({ type: 'vibrate', duration: DURATIONS.SHORT });
+      else if (morse[j] === '-') patterns.push({ type: 'vibrate', duration: DURATIONS.LONG });
+      if (j < morse.length - 1) patterns.push({ type: 'pause', duration: DURATIONS.DOT_PAUSE });
       }
-      if (i < t.length - 1 && t[i + 1] !== ' ')
-        patterns.push({ type: 'pause', duration: DURATIONS.CHAR_PAUSE });
+    if (i < t.length - 1 && t[i + 1] !== ' ') patterns.push({ type: 'pause', duration: DURATIONS.CHAR_PAUSE });
     }
     return patterns;
   }
@@ -758,7 +744,7 @@
     if (grade2El && settings.useGrade2 !== undefined) grade2El.checked = settings.useGrade2;
     var usageModeEl = document.getElementById('usageMode');
     var autoSendAfterVoiceEl = document.getElementById('autoSendAfterVoice');
-    if (usageModeEl) usageModeEl.value = settings.bothDeafBlind ? 'bothDeafBlind' : 'standard';
+    // if (usageModeEl) usageModeEl.value = settings.bothDeafBlind ? 'bothDeafBlind' : 'standard';
     if (autoSendAfterVoiceEl && settings.autoSendAfterVoice !== undefined) autoSendAfterVoiceEl.checked = settings.autoSendAfterVoice;
 
     var appBody = document.getElementById('appBody');
@@ -925,28 +911,38 @@
 
     document.getElementById('sendBtn').addEventListener('click', function () {
       var text = validateMessage(messageInput.value);
-      // Check for tactile dictionary conversion in Morse mode
-      if (text.length === 1 && window.tempMorse) {
+      
+      // Tactile dictionary fallback
+      if (text && text.length === 1 && window.tempMorse) {
         var word = MORSE_TO_WORD[window.tempMorse];
         if (word) {
           text = word;
           window.tempMorse = '';
         }
       }
+
       if (!text || !isConnected()) {
         if (text && text.length > 1000) alert('Pesan terlalu panjang (max 1000 karakter)');
         return;
       }
+
       var moodEl = document.getElementById('moodSelect');
       if (moodEl) moodEl.value = '';
+      
       sendMessage(text);
+      
       messageInput.value = '';
       if (charCount) charCount.textContent = '0';
       document.getElementById('previewSection').classList.add('hidden');
       document.getElementById('sendBtn').disabled = true;
-      // document.getElementById('playBtn').disabled = true;
+      
       if (isConnected()) send({ type: 'typing', data: { isTyping: false } });
     });
+
+    // ✅ Ensure isConnected() actually checks the WebSocket correctly
+    function isConnected() {
+      return ws && ws.readyState === WebSocket.OPEN;
+    }
 
     document.getElementById('markReadBtn').addEventListener('click', function () {
       if (lastReceivedMessageId && isConnected) {
@@ -977,21 +973,9 @@
       });
     }
     
-    if (usageModeEl) usageModeEl.addEventListener('change', function () {
-      var on = this.value === 'bothDeafBlind';
-      if (window.SettingsManager) window.SettingsManager.updateSetting('bothDeafBlind', on);
-      settings.bothDeafBlind = on;
-      if (appBody) appBody.classList.toggle('mode-both-deafblind', on);
-      // var vb = document.getElementById('voiceBtn');
-      if (vb) vb.classList.toggle('advanced-only', !on);
-    });
-    if (appBody) appBody.classList.toggle('mode-both-deafblind', !!settings.bothDeafBlind);
-    // var voiceBtnVisibility = document.getElementById('voiceBtn');
-    // if (voiceBtnVisibility) voiceBtnVisibility.classList.toggle('advanced-only', !settings.bothDeafBlind);
-
     function updateSendPreview() {
       var preview = document.getElementById('sendPreviewText');
-      var sendDb = document.getElementById('sendBtnDeafBlind');
+      // var sendDb = document.getElementById('sendBtnDeafBlind');
       var playPreviewBtn = document.getElementById('playPreviewVibrationBtn');
       if (!messageInput) return;
       var txt = messageInput.value.trim();
@@ -1026,15 +1010,12 @@
       });
     });
 
-    function isConnected() {
-      return ws && ws.readyState === WebSocket.OPEN;
-    }
+  function isConnected() { return ws && ws.readyState === WebSocket.OPEN; }
+  window.isConnected = isConnected; // Expose globally for debugging
   }
 
-  if (document.readyState === 'loading')
-    document.addEventListener('DOMContentLoaded', init);
-  else
-    init();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 
   function clearMessages() {
     const messagesList = document.getElementById('messagesList');
@@ -1059,6 +1040,6 @@
     // Optional: Reset receipt tracking
     lastReceivedMessageId = null;
     lastReceivedMessageData = null;
-    if (messageIdToElement) messageIdToElement = {};
+  messageIdToElement = {};
   }
-});
+})();
