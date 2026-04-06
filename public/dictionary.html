@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1c1917" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c0a09" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Kamus Bahasa Tactile Kaito Whale">
+  <title>Kamus Bahasa Tactile - Kaito Whale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    (function() {
+      if (typeof tailwind === 'undefined') return;
+      var cfg = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Figtree', 'system-ui', 'sans-serif'],
+              display: ['Instrument Serif', 'Georgia', 'serif'],
+            },
+          },
+        },
+      };
+      if (typeof tailwind.config === 'function') {
+        tailwind.config(cfg);
+      } else {
+        tailwind.config = cfg;
+      }
+    })();
+  </script>
+  <style>
+    body { background: #d4f7d4; color: #1c1917; margin: 0; min-height: 100vh; font-family: 'Figtree', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+  </style>
+</head>
+<body class="min-h-screen bg-green-100 dark:bg-stone-900 text-stone-900 dark:text-stone-100 font-sans text-base antialiased transition-colors">
+  <div class="w-full md:w-1/2 md:mx-auto min-h-screen flex flex-col px-4 pb-10 pt-6 simple-layout">
+    <header class="flex justify-between items-center mb-4 relative">
+      <div>
+        <h1 class="font-display text-4xl text-stone-900 dark:text-stone-100 italic mb-2">Kamus Bahasa Tactile</h1>
+        <div class="text-xs text-stone-500 dark:text-stone-400 mb-2">Kaito Whale</div>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" id="darkModeBtn" onclick="toggleDarkMode()" class="p-3 rounded-xl bg-stone-200 dark:bg-stone-700 text-lg" aria-label="Toggle dark mode" title="Ganti tema gelap/terang">
+          <span id="darkModeIconMoon" class="dark:hidden">🌙</span>
+          <span id="darkModeIconSun" class="hidden dark:inline">☀️</span>
+        </button>
+        <a href="index.html" class="p-3 rounded-xl bg-stone-200 dark:bg-stone-700 text-lg" aria-label="Kembali" title="Kembali">⬅️ Kembali</a>
+      </div>
+      <script>
+        // Dark mode toggle - sama seperti index.html
+        function toggleDarkMode() {
+          var html = document.documentElement;
+          var isDark = html.classList.toggle('dark');
+          try {
+            var s = JSON.parse(localStorage.getItem('kaito_whale_settings') || '{}');
+            s.darkMode = isDark;
+            localStorage.setItem('kaito_whale_settings', JSON.stringify(s));
+          } catch (e) {}
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', isDark ? '#0c0a09' : '#1c1917');
+          return isDark;
+        }
+        window.toggleDarkMode = toggleDarkMode;
+        // Apply saved dark mode immediately (avoid flash of light theme)
+        try {
+          var saved = JSON.parse(localStorage.getItem('kaito_whale_settings') || '{}');
+          if (saved.darkMode) {
+            document.documentElement.classList.add('dark');
+            var m = document.querySelector('meta[name="theme-color"]');
+            if (m) m.setAttribute('content', '#0c0a09');
+          }
+        } catch (e) {}
+      </script>
+    </header>
+    <main>
+      <div class="flex gap-2 mb-4 flex-wrap">
+        <button class="dict-tab px-4 py-2 rounded-full font-semibold text-sm bg-emerald-700 text-white dark:bg-emerald-600 dark:text-white" data-tab="confirmation">Konfirmasi</button>
+        <button class="dict-tab px-4 py-2 rounded-full font-semibold text-sm bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-100" data-tab="needs">Kebutuhan</button>
+        <button class="dict-tab px-4 py-2 rounded-full font-semibold text-sm bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-100" data-tab="condition">Kondisi</button>
+        <button class="dict-tab px-4 py-2 rounded-full font-semibold text-sm bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-100" data-tab="emotion">Emosi</button>
+        <button class="dict-tab px-4 py-2 rounded-full font-semibold text-sm bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-100" data-tab="help">Bantuan</button>
+        <button class="dict-tab px-4 py-2 rounded-full font-semibold text-sm bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-100" data-tab="interaction">Interaksi</button>
+        <button class="dict-tab px-4 py-2 rounded-full font-semibold text-sm bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-100" data-tab="time">Waktu</button>
+      </div>
+      <div id="dictContent" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      <div class="mt-6 text-xs text-stone-500 dark:text-stone-400">• = dot, — = dash</div>
+    </main>
+  </div>
+  <script src="features.js"></script>
+</body>
+</html>

@@ -1,3 +1,110 @@
+// Dictionary Data
+const TACTILE_DICTIONARY = {
+  confirmation: [
+    { word: 'YA', pattern: '•' },
+    { word: 'TIDAK', pattern: '—' },
+    { word: 'MUNGKIN', pattern: '••—•' },
+    { word: 'TIDAK TAHU', pattern: '———•' },
+    { word: 'MENGERTI', pattern: '•—••' },
+    { word: 'TIDAK MENGERTI', pattern: '—•••' },
+  ],
+  needs: [
+    { word: 'MAKAN', pattern: '••' },
+    { word: 'MINUM', pattern: '——' },
+    { word: 'MANDI', pattern: '•—' },
+    { word: 'TIDUR', pattern: '—•' },
+    { word: 'TOILET', pattern: '•••—' },
+    { word: 'OBAT', pattern: '——•—' },
+    { word: 'DUDUK', pattern: '•——' },
+    { word: 'BERDIRI', pattern: '—••' },
+  ],
+  condition: [
+    { word: 'LAPAR', pattern: '•••' },
+    { word: 'HAUS', pattern: '———' },
+    { word: 'SAKIT', pattern: '•—•' },
+    { word: 'CAPEK', pattern: '—•—' },
+    { word: 'DINGIN', pattern: '••—' },
+    { word: 'PANAS', pattern: '——•' },
+    { word: 'PUSING', pattern: '•——•' },
+    { word: 'SESAK', pattern: '—•••' },
+  ],
+  emotion: [
+    { word: 'SENANG', pattern: '•—••' },
+    { word: 'SEDIH', pattern: '—••—' },
+    { word: 'TAKUT', pattern: '••—•' },
+    { word: 'MARAH', pattern: '——••' },
+    { word: 'TENANG', pattern: '•——' },
+    { word: 'GELISAH', pattern: '—••' },
+  ],
+  help: [
+    { word: 'TOLONG', pattern: '••••' },
+    { word: 'DARURAT', pattern: '————' },
+    { word: 'PULANG', pattern: '•——•' },
+    { word: 'BUTUH BANTUAN', pattern: '—••—' },
+    { word: 'ULANGI', pattern: '••——' },
+    { word: 'SELESAI', pattern: '——••' },
+    { word: 'DATANG', pattern: '•—••' },
+    { word: 'PERGI', pattern: '—•——' },
+  ],
+  interaction: [
+    { word: 'DENGARKAN', pattern: '•—•—' },
+    { word: 'TUNGGU', pattern: '—•••' },
+    { word: 'CEPAT', pattern: '••—•' },
+    { word: 'PELAN', pattern: '———•' },
+    { word: 'LAGI', pattern: '•——•' },
+  ],
+  time: [
+    { word: 'SEKARANG', pattern: '•••—' },
+    { word: 'NANTI', pattern: '—••—' },
+    { word: 'PAGI', pattern: '•——•' },
+    { word: 'MALAM', pattern: '—•—•' },
+  ],
+};
+
+function renderDictionaryTab(tab) {
+  const content = document.getElementById('dictContent');
+  if (!content) return;
+  content.innerHTML = '';
+  const items = TACTILE_DICTIONARY[tab] || [];
+  items.forEach(item => {
+    const box = document.createElement('div');
+    box.className = 'rounded-xl bg-stone-100 dark:bg-stone-700 p-4 mb-2 flex flex-col shadow';
+    box.innerHTML = `
+      <div class="font-bold text-lg mb-2">${item.word}</div>
+      <div class="text-xs text-stone-500 dark:text-stone-400 mb-1">Tactile Pattern</div>
+      <div class="font-mono text-lg bg-white dark:bg-stone-800 rounded p-2 mb-1">${item.pattern}</div>
+      <div class="text-xs text-stone-400 dark:text-stone-500">Tap to preview vibration</div>
+    `;
+    content.appendChild(box);
+  });
+}
+
+function setupDictionaryTabs() {
+  const tabs = document.querySelectorAll('.dict-tab');
+  if (!tabs.length) return;
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function () {
+      tabs.forEach(t => t.classList.remove('bg-emerald-700', 'dark:bg-emerald-600', 'text-white'));
+      tabs.forEach(t => t.classList.add('bg-stone-200', 'dark:bg-stone-700', 'text-stone-700', 'dark:text-stone-100'));
+      this.classList.add('bg-emerald-700', 'dark:bg-emerald-600', 'text-white');
+      this.classList.remove('bg-stone-200', 'dark:bg-stone-700', 'text-stone-700', 'dark:text-stone-100');
+      renderDictionaryTab(this.dataset.tab);
+    });
+  });
+  renderDictionaryTab('confirmation');
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  setupDictionaryTabs();
+  // Tombol Kamus di halaman utama
+  const openBtn = document.getElementById('openDictionaryBtn');
+  if (openBtn) {
+    openBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.location.href = 'dictionary.html';
+    });
+  }
+});
 /**
  * Konstanta untuk fitur tambahan: darurat, role, mood, Braille Grade 2
  */
