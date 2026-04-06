@@ -26,14 +26,8 @@
 
     // Temporary Morse storage
     window.tempMorse = '';
-
-    function addMorse(char) {
-      window.tempMorse += char === '•' ? '.' : '-';
-    }
-
-    function deleteMorse() {
-      window.tempMorse = window.tempMorse.slice(0, -1);
-    }
+  function addMorse(char) { window.tempMorse += char === '•' ? '.' : '-'; }
+  function deleteMorse() { window.tempMorse = window.tempMorse.slice(0, -1); }
 
     var morseInput = '';
     var messageInput = document.getElementById('messageInput');
@@ -42,10 +36,7 @@
     function syncMorseUI() {
       const morseInputPreview = document.getElementById('morseInputPreview');
       const morseResultPreview = document.getElementById('morseResultPreview');
-      if (morseInputPreview) {
-        morseInputPreview.textContent = morseInput || ' ';
-      }
-
+    if (morseInputPreview) morseInputPreview.textContent = morseInput || ' ';
       if (morseResultPreview) {
         const translatedChar = REVERSE_MORSE_MAP[morseInput] || '';
         morseResultPreview.textContent = translatedChar;
@@ -76,8 +67,6 @@
         messageInput.value += ch;
         if (charCount) charCount.textContent = messageInput.value.length;
         document.getElementById('sendBtn').disabled = !messageInput.value.trim();
-        const playBtnEl = document.getElementById('playBtn');
-        if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
         if (typeof updateSendPreview === 'function') updateSendPreview();
       } else if (messageInput.value.length <= 0 && window.tempMorse && ch === undefined) {
         // Check for tactile dictionary conversion in Morse mode
@@ -101,8 +90,6 @@
       messageInput.value = messageInput.value + ' ';
       if (charCount) charCount.textContent = messageInput.value.length;
       document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
-      var playBtnEl = document.getElementById('playBtn');
-      if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
       updateSendPreview();
       updatePatternPreviewUI();
     });
@@ -110,7 +97,7 @@
       if (messageInput.value.length > 0) {
         messageInput.value = messageInput.value.slice(0, -1);
         syncMorseUI();
-      updatePatternPreviewUI();
+        updatePatternPreviewUI();
       }
     });
     document.getElementById('morseClearBtn').addEventListener('click', function () {
@@ -204,7 +191,6 @@
     var previewSection = document.getElementById('previewSection');
     var patternPreviewEl = document.getElementById('patternPreview');
     var sendBtn = document.getElementById('sendBtn');
-    var playBtn = document.getElementById('playBtn');
     var longWarn = document.getElementById('longMessageWarning');
 
     if (charCount) {
@@ -226,7 +212,6 @@
     }
 
     if (sendBtn) sendBtn.disabled = !isConnected() || !text.trim();
-    if (playBtn) playBtn.disabled = !text.trim();
   }
 
   function textToVibrationPattern(text) {
@@ -241,16 +226,11 @@
       const morse = MORSE_MAP[char];
       if (!morse) continue;
       for (let j = 0; j < morse.length; j++) {
-        if (morse[j] === '.') {
-          patterns.push({ type: 'vibrate', duration: DURATIONS.SHORT });
-        } else if (morse[j] === '-') {
-          patterns.push({ type: 'vibrate', duration: DURATIONS.LONG });
-        }
-        if (j < morse.length - 1)
-          patterns.push({ type: 'pause', duration: DURATIONS.DOT_PAUSE });
+      if (morse[j] === '.') patterns.push({ type: 'vibrate', duration: DURATIONS.SHORT });
+      else if (morse[j] === '-') patterns.push({ type: 'vibrate', duration: DURATIONS.LONG });
+      if (j < morse.length - 1) patterns.push({ type: 'pause', duration: DURATIONS.DOT_PAUSE });
       }
-      if (i < t.length - 1 && t[i + 1] !== ' ')
-        patterns.push({ type: 'pause', duration: DURATIONS.CHAR_PAUSE });
+    if (i < t.length - 1 && t[i + 1] !== ' ') patterns.push({ type: 'pause', duration: DURATIONS.CHAR_PAUSE });
     }
     return patterns;
   }
@@ -491,130 +471,73 @@
   }
 
   function connect() {
-    const urlInput = document.getElementById('serverUrl');
-    const nameInput = document.getElementById('userName');
-    let wsUrl = (urlInput.value || '').trim() || getDefaultWsUrl();
-    if (!wsUrl.startsWith('ws://') && !wsUrl.startsWith('wss://'))
-      wsUrl = 'ws://' + wsUrl;
-    userName = (nameInput.value || '').trim();
-
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.close();
-      return;
-    }
-
-    setStatus('connecting', '⏳ Menghubungkan...');
-    document.getElementById('connectBtn').disabled = true;
-
-    try {
-      ws = new WebSocket(wsUrl);
-    } catch (e) {
-      setStatus('error', '✗ Error');
-      document.getElementById('connectBtn').disabled = false;
-      document.getElementById('connectBtn').textContent = '🔗 Hubungkan';
-      return;
-    }
-
-    ws.onopen = function () {
-      // ✅ CLEAR MESSAGES ON SUCCESSFUL CONNECT
-      clearMessages();
-      
-      setStatus('connected', '✓ Terhubung');
-      document.getElementById('connectBtn').textContent = '🔌 Putuskan';
-      document.getElementById('connectBtn').disabled = false;
-      document.getElementById('messagesSection').classList.remove('hidden');
-      document.getElementById('userListSection').classList.remove('hidden');
-      document.getElementById('urlServerInput').classList.add('hidden');
-      document.getElementById('usernameInput').classList.add('hidden');
-      var qs = document.getElementById('quickSection');
-      if (qs) qs.classList.remove('hidden');
-      var roleVal = document.getElementById('senderRole') && document.getElementById('senderRole').value;
-      send({ type: 'set_name', data: { name: userName, role: roleVal || undefined } });
-    };
-
-    ws.onmessage = function (event) {
-      try {
-        const msg = JSON.parse(event.data);
-        if (msg.type === 'connect') {
-          clientId = msg.data.clientId;
-        } else if (msg.type === 'broadcast') {
-          addMessage(msg.data, false);
-          if (msg.data.messageId) lastReceivedMessageId = msg.data.messageId;
-          lastReceivedMessageData = msg.data;
-          var receiptRow = document.getElementById('readReceiptRow');
-          if (receiptRow) receiptRow.classList.remove('hidden');
-          if (window.MessageHistory) {
-            window.MessageHistory.saveMessage({ ...msg.data, timestamp: msg.timestamp, isOwn: false });
-          }
-          var fromName = (msg.data.from && msg.data.from.name) ? msg.data.from.name.trim().toLowerCase() : '';
-          var trusted = (document.getElementById('trustedNames') && document.getElementById('trustedNames').value) || (settings.trustedNames || '');
-          var trustedList = trusted.split(',').map(function(s) { return s.trim().toLowerCase(); }).filter(Boolean);
-          var allowPlay = settings.autoPlay !== false && (!trustedList.length || trustedList.some(function(n) { return fromName.indexOf(n) >= 0 || n.indexOf(fromName) >= 0; }));
-          if (msg.data.text && allowPlay) {
-            playMessageVibration(msg.data);
-          }
-        } else if (msg.type === 'read_receipt') {
-          var mid = msg.data && msg.data.messageId;
-          var el = messageIdToElement[mid];
-          if (el && !el.querySelector('.read-receipt-badge')) {
-            var readSpan = document.createElement('span');
-            readSpan.className = 'read-receipt-badge text-xs text-emerald-600 dark:text-emerald-400 mt-1 block';
-            readSpan.textContent = '✓ Dibaca';
-            readSpan.setAttribute('aria-label', 'Sudah dibaca');
-            el.appendChild(readSpan);
-          }
-        } else if (msg.type === 'user_list') {
-          renderUserList(msg.data.users || []);
-        } else if (msg.type === 'typing') {
-          showTypingIndicator(msg.data);
-        } else if (msg.type === 'error') {
-          showError(msg.data.error || 'Terjadi kesalahan');
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    };
-
-    ws.onerror = function (error) {
-      console.error('WebSocket error:', error);
-      setStatus('error', '✗ Error koneksi');
-      document.getElementById('connectBtn').disabled = false;
-      document.getElementById('connectBtn').textContent = '🔗 Hubungkan';
-    };
-
-    ws.onclose = function (event) {
-      ws = null;
-      setStatus('', 'Terputus');
-      document.getElementById('connectBtn').textContent = '🔗 Hubungkan';
-      document.getElementById('connectBtn').disabled = false;
-      document.getElementById('messagesSection').classList.add('hidden');
-      document.getElementById('userListSection').classList.add('hidden');
-      document.getElementById('urlServerInput').classList.remove('hidden');
-      document.getElementById('usernameInput').classList.remove('hidden');
-      var qs = document.getElementById('quickSection');
-      if (qs) qs.classList.add('hidden');
-      var rr = document.getElementById('readReceiptRow');
-      if (rr) rr.classList.add('hidden');
-      
-      // Show retry button jika bukan close normal
-      if (event.code !== 1000 && event.code !== 1001) {
-        console.warn('WebSocket closed unexpectedly:', event.code, event.reason);
-        const retryBtn = document.getElementById('retryBtn');
-        if (retryBtn) retryBtn.classList.remove('hidden');
-      }
-    };
+    console.log('🔌 Attempting to connect...');
+  
+  const urlInput = document.getElementById('serverUrl');
+  const nameInput = document.getElementById('userName');
+  const connectBtn = document.getElementById('connectBtn');
+  
+  let wsUrl = (urlInput?.value || '').trim() || getDefaultWsUrl();
+  if (!wsUrl.startsWith('ws://') && !wsUrl.startsWith('wss://')) {
+    wsUrl = 'ws://' + wsUrl;
   }
+  
+  userName = (nameInput?.value || '').trim();
+  
+  // Close existing connection
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.close();
+  }
+  
+  setStatus('connecting', '⏳ Menghubungkan...');
+  if (connectBtn) connectBtn.disabled = true;
+  
+  try {
+    ws = new WebSocket(wsUrl);
+    console.log('📡 WebSocket created:', wsUrl);
+  } catch (e) {
+    console.error('❌ WebSocket creation failed:', e);
+    setStatus('error', '✗ Error');
+    if (connectBtn) {
+      connectBtn.disabled = false;
+      connectBtn.textContent = '🔗 Hubungkan';
+    }
+    return;
+  }
+  
+  ws.onopen = function() {
+    console.log('✅ WebSocket connected');
+    clearMessages();
+    setStatus('connected', '✓ Terhubung');
+    if (connectBtn) {
+      connectBtn.textContent = '🔌 Putuskan';
+      connectBtn.disabled = false;
+    }
+    // ... rest of onopen logic
+  };
+  
+  ws.onerror = function(error) {
+    console.error('❌ WebSocket error:', error);
+    setStatus('error', '✗ Error koneksi');
+    if (connectBtn) connectBtn.disabled = false;
+  };
+  
+  ws.onclose = function(event) {
+    console.log('🔌 WebSocket closed:', event.code, event.reason);
+    ws = null;
+    setStatus('', 'Terputus');
+    if (connectBtn) {
+      connectBtn.textContent = '🔗 Hubungkan';
+      connectBtn.disabled = false;
+    }
+  };
+  }
+  // Auto-connect on load
+  connect();
 
   function send(obj) {
     if (ws && ws.readyState === WebSocket.OPEN)
       ws.send(JSON.stringify({ ...obj, timestamp: Date.now() }));
-  }
-
-  function renderUserList(users) {
-    const list = document.getElementById('userList');
-    const count = document.getElementById('userCount');
-    count.textContent = users.length;
-    list.innerHTML = users.map(u => '<li>• ' + (u.name || 'Anonymous') + '</li>').join('');
   }
 
   function formatTime(timestamp) {
@@ -709,12 +632,6 @@
     }
   }
 
-  function escapeHtml(s) {
-    const div = document.createElement('div');
-    div.textContent = s;
-    return div.innerHTML;
-  }
-
   function textToMorseWithSlashes(text) {
     if (!text) return '';
     const upperText = text.toUpperCase();
@@ -773,19 +690,6 @@
     chain.catch(function() {});
     return chain;
   }
-  // Load message history
-  function loadMessageHistory() {
-    if (!window.MessageHistory) return;
-    const history = window.MessageHistory.loadHistory();
-    if (history.length > 0) {
-      const list = document.getElementById('messagesList');
-      const empty = document.getElementById('emptyMessages');
-      if (empty) empty.classList.add('hidden');
-      history.slice(-20).forEach(msg => {
-        addMessage(msg, msg.isOwn || false);
-      });
-    }
-  }
   // Dark mode toggle
   function toggleDarkMode() {
     const html = document.documentElement;
@@ -832,8 +736,6 @@
       document.removeEventListener('click', initAudioOnFirstClick);
     }, { once: true });
 
-    loadMessageHistory();
-
     var trustedEl = document.getElementById('trustedNames');
     var repeatEl = document.getElementById('repeatCount');
     var grade2El = document.getElementById('useGrade2');
@@ -842,7 +744,7 @@
     if (grade2El && settings.useGrade2 !== undefined) grade2El.checked = settings.useGrade2;
     var usageModeEl = document.getElementById('usageMode');
     var autoSendAfterVoiceEl = document.getElementById('autoSendAfterVoice');
-    if (usageModeEl) usageModeEl.value = settings.bothDeafBlind ? 'bothDeafBlind' : 'standard';
+    // if (usageModeEl) usageModeEl.value = settings.bothDeafBlind ? 'bothDeafBlind' : 'standard';
     if (autoSendAfterVoiceEl && settings.autoSendAfterVoice !== undefined) autoSendAfterVoiceEl.checked = settings.autoSendAfterVoice;
 
     var appBody = document.getElementById('appBody');
@@ -886,8 +788,12 @@
     }
 
     var serverUrl = document.getElementById('serverUrl');
-    if (!serverUrl.value) serverUrl.placeholder = 'Kosongkan = pakai server ini';
-    serverUrl.value = serverUrl.value || '';
+    if (serverUrl) {
+      if (!serverUrl.value) serverUrl.placeholder = 'Kosongkan = pakai server ini';
+      serverUrl.value = serverUrl.value || '';
+    } else {
+      console.warn('Input serverUrl tidak ditemukan');
+    }
 
     // Keyboard shortcuts
     document.getElementById('messageInput').addEventListener('keydown', function(e) {
@@ -902,13 +808,7 @@
 
     // Dark mode: toggle sudah di-handle via onclick di HTML (window.toggleDarkMode)
 
-    // Connection retry
-    const retryBtn = document.getElementById('retryBtn');
-    if (retryBtn) {
-      retryBtn.addEventListener('click', connect);
-    }
 
-    document.getElementById('connectBtn').addEventListener('click', connect);
 
     var messageInput = document.getElementById('messageInput');
     var charCount = document.getElementById('charCount');
@@ -966,7 +866,7 @@
       }
       
       document.getElementById('sendBtn').disabled = !isConnected() || !text.trim();
-      document.getElementById('playBtn').disabled = !text.trim();
+      // document.getElementById('playBtn').disabled = !text.trim();
     });
 
     // Initialize textarea height
@@ -1011,55 +911,41 @@
 
     document.getElementById('sendBtn').addEventListener('click', function () {
       var text = validateMessage(messageInput.value);
-      // Check for tactile dictionary conversion in Morse mode
-      if (text.length === 1 && window.tempMorse) {
+      
+      // Tactile dictionary fallback
+      if (text && text.length === 1 && window.tempMorse) {
         var word = MORSE_TO_WORD[window.tempMorse];
         if (word) {
           text = word;
           window.tempMorse = '';
         }
       }
+
       if (!text || !isConnected()) {
         if (text && text.length > 1000) alert('Pesan terlalu panjang (max 1000 karakter)');
         return;
       }
+
       var moodEl = document.getElementById('moodSelect');
       if (moodEl) moodEl.value = '';
+      
       sendMessage(text);
+      
       messageInput.value = '';
       if (charCount) charCount.textContent = '0';
       document.getElementById('previewSection').classList.add('hidden');
       document.getElementById('sendBtn').disabled = true;
-      document.getElementById('playBtn').disabled = true;
+      
       if (isConnected()) send({ type: 'typing', data: { isTyping: false } });
     });
 
-    document.getElementById('playBtn').addEventListener('click', function () {
-      var text = messageInput.value.trim();
-      if (!text) return;
-      var useG2 = document.getElementById('useGrade2') && document.getElementById('useGrade2').checked;
-      var patterns = useG2 ? textToVibrationPatternGrade2(text) : textToVibrationPattern(text);
-      var progressSection = document.getElementById('progressSection');
-      var progressText = document.getElementById('progressText');
-      progressSection.classList.remove('hidden');
-      var outputTypes = [];
-      if (isVibrationSupported()) outputTypes.push('getaran');
-      if (audioSettings.enabled && isAudioSupported()) outputTypes.push('audio');
-      var outputText = outputTypes.length > 0 ? outputTypes.join(' + ') : 'output';
-      progressText.textContent = 'Memutar ' + outputText + '...';
-      playVibrationPattern(patterns, function (p) {
-        progressText.textContent = 'Memutar: ' + p.current + ' / ' + p.total;
-        if (p.current >= p.total) progressSection.classList.add('hidden');
-      });
-    });
-
-    document.getElementById('testBtn').addEventListener('click', function () {
-      testVibration();
-      testAudio();
-    });
+    // ✅ Ensure isConnected() actually checks the WebSocket correctly
+    function isConnected() {
+      return ws && ws.readyState === WebSocket.OPEN;
+    }
 
     document.getElementById('markReadBtn').addEventListener('click', function () {
-      if (lastReceivedMessageId && isConnected()) {
+      if (lastReceivedMessageId && isConnected) {
         send({ type: 'read_receipt', data: { messageId: lastReceivedMessageId } });
         document.getElementById('readReceiptRow').classList.add('hidden');
       }
@@ -1086,172 +972,10 @@
         quickWrap.appendChild(btn);
       });
     }
-    // document.getElementById('emergencyBtn').addEventListener('click', function () {
-    //   if (isConnected()) sendMessage('BUTUH BANTUAN DARURAT', { emergency: true });
-    // });
-
-    var voiceBtn = document.getElementById('voiceBtn');
-    if (voiceBtn && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-      var Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      var recognition = new Recognition();
-      recognition.lang = 'id-ID';
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      var voiceListening = false;
-      function voiceVibrateStart() {
-        if (isVibrationSupported() && settings.bothDeafBlind) navigator.vibrate(150);
-      }
-      function voiceVibrateStop() {
-        if (isVibrationSupported() && settings.bothDeafBlind) navigator.vibrate([150, 80, 150]);
-      }
-      function syncVoiceButtonState() {
-        var vbd = document.getElementById('voiceBtnDeafBlind');
-        if (vbd) {
-          vbd.textContent = voiceBtn.textContent;
-          vbd.disabled = voiceBtn.disabled;
-          vbd.setAttribute('aria-label', voiceBtn.getAttribute('aria-label') || 'Rekam suara');
-        }
-      }
-      recognition.onresult = function (e) {
-        var result = e.results[e.results.length - 1];
-        if (result.isFinal && result.length > 0) {
-          var t = result[0].transcript;
-          if (t) {
-            messageInput.value = (messageInput.value + (messageInput.value ? ' ' : '') + t).trim();
-            if (charCount) charCount.textContent = messageInput.value.length;
-            document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
-            var playBtnEl = document.getElementById('playBtn');
-            if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
-            var previewEl = document.getElementById('sendPreviewText');
-            var sendDb = document.getElementById('sendBtnDeafBlind');
-            var playPreviewBtn = document.getElementById('playPreviewVibrationBtn');
-            if (previewEl) previewEl.textContent = messageInput.value.trim() || '— Rekam suara, teks akan muncul di sini —';
-            if (sendDb) sendDb.disabled = !isConnected() || !messageInput.value.trim();
-            if (playPreviewBtn) playPreviewBtn.disabled = !messageInput.value.trim();
-            if (settings.bothDeafBlind && settings.autoSendAfterVoice && isConnected() && messageInput.value.trim()) {
-              setTimeout(function () {
-                var txt = messageInput.value.trim();
-                if (txt) sendMessage(txt);
-                messageInput.value = '';
-                if (charCount) charCount.textContent = '0';
-                document.getElementById('sendBtn').disabled = true;
-                if (playBtnEl) playBtnEl.disabled = true;
-                if (previewEl) previewEl.textContent = '— Rekam suara, teks akan muncul di sini —';
-                if (sendDb) sendDb.disabled = true;
-                var playPrevBtn = document.getElementById('playPreviewVibrationBtn');
-                if (playPrevBtn) playPrevBtn.disabled = true;
-              }, 400);
-            }
-          }
-        }
-      };
-      recognition.onstart = function () {
-        voiceListening = true;
-        voiceBtn.textContent = '🔴 Stop (tap untuk berhenti)';
-        voiceBtn.disabled = false;
-        voiceBtn.setAttribute('aria-label', 'Rekam aktif. Sentuh lagi untuk stop.');
-        syncVoiceButtonState();
-        voiceVibrateStart();
-      };
-      recognition.onend = function () {
-        voiceListening = false;
-        voiceBtn.textContent = '🎤 Rekam';
-        voiceBtn.disabled = false;
-        voiceBtn.setAttribute('aria-label', 'Rekam suara. Sentuh untuk mulai.');
-        syncVoiceButtonState();
-        voiceVibrateStop();
-      };
-      recognition.onerror = function (e) {
-        voiceListening = false;
-        voiceBtn.disabled = false;
-        voiceBtn.textContent = '🎤 Rekam';
-        voiceBtn.setAttribute('aria-label', 'Rekam suara');
-        syncVoiceButtonState();
-        if (e.error === 'not-allowed') showError('Izinkan akses mikrofon di pengaturan browser/situs ini, lalu coba lagi.');
-        else if (e.error === 'no-speech') showError('Tidak ada suara terdeteksi. Coba lagi.');
-        else if (e.error === 'network') showError('Rekam butuh koneksi internet.');
-        else if (e.error === 'aborted') { /* user stop, no message */ }
-        else showError('Rekam gagal: ' + (e.error || 'unknown'));
-      };
-      voiceBtn.addEventListener('click', function () {
-        if (voiceListening) {
-          try { recognition.stop(); } catch (err) {}
-          return;
-        }
-        if (voiceBtn.disabled) return;
-        if (!window.isSecureContext) {
-          showError('Rekam suara hanya bisa dipakai di HTTPS. Buka alamat dengan https:// (bukan http://).');
-          return;
-        }
-        voiceBtn.disabled = true;
-        voiceBtn.textContent = '⏳ Meminta mikrofon...';
-        var startRecognition = function () {
-          voiceBtn.textContent = '🎤 Rekam';
-          voiceBtn.disabled = false;
-          var vbd = document.getElementById('voiceBtnDeafBlind');
-          if (vbd) { vbd.textContent = '🎤 Rekam'; vbd.disabled = false; }
-          try {
-            recognition.start();
-          } catch (err) {
-            voiceBtn.textContent = '🎤 Rekam';
-            if (vbd) vbd.textContent = '🎤 Rekam';
-            showError('Rekam tidak bisa dimulai. Coba tutup lalu buka lagi halaman ini.');
-          }
-        };
-        if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
-          navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(function (stream) {
-              stream.getTracks().forEach(function (t) { t.stop(); });
-              startRecognition();
-            })
-            .catch(function (err) {
-              voiceBtn.disabled = false;
-              voiceBtn.textContent = '🎤 Rekam';
-              var vbd = document.getElementById('voiceBtnDeafBlind');
-              if (vbd) { vbd.disabled = false; vbd.textContent = '🎤 Rekam'; }
-              if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                showError('Akses mikrofon ditolak. Izinkan mikrofon untuk situs ini di pengaturan browser.');
-              } else {
-                showError('Tidak bisa akses mikrofon: ' + (err.message || err.name));
-              }
-            });
-        } else {
-          startRecognition();
-        }
-      });
-    } else if (voiceBtn) {
-      voiceBtn.disabled = true;
-      voiceBtn.title = 'Rekam suara tidak didukung di browser ini. Pakai Chrome/Edge di Android, dan buka lewat HTTPS.';
-    }
-
-    document.getElementById('senderRole').addEventListener('change', function () {
-      if (isConnected()) send({ type: 'set_name', data: { name: userName, role: this.value || undefined } });
-    });
-
-    document.getElementById('trustedNames').addEventListener('change', function () {
-      if (window.SettingsManager) window.SettingsManager.updateSetting('trustedNames', this.value);
-    });
-    document.getElementById('repeatCount').addEventListener('change', function () {
-      if (window.SettingsManager) window.SettingsManager.updateSetting('repeatMessageCount', parseInt(this.value, 10));
-    });
-    document.getElementById('useGrade2').addEventListener('change', function () {
-      if (window.SettingsManager) window.SettingsManager.updateSetting('useGrade2', this.checked);
-    });
-    if (usageModeEl) usageModeEl.addEventListener('change', function () {
-      var on = this.value === 'bothDeafBlind';
-      if (window.SettingsManager) window.SettingsManager.updateSetting('bothDeafBlind', on);
-      settings.bothDeafBlind = on;
-      if (appBody) appBody.classList.toggle('mode-both-deafblind', on);
-      var vb = document.getElementById('voiceBtn');
-      if (vb) vb.classList.toggle('advanced-only', !on);
-    });
-    if (appBody) appBody.classList.toggle('mode-both-deafblind', !!settings.bothDeafBlind);
-    var voiceBtnVisibility = document.getElementById('voiceBtn');
-    if (voiceBtnVisibility) voiceBtnVisibility.classList.toggle('advanced-only', !settings.bothDeafBlind);
-
+    
     function updateSendPreview() {
       var preview = document.getElementById('sendPreviewText');
-      var sendDb = document.getElementById('sendBtnDeafBlind');
+      // var sendDb = document.getElementById('sendBtnDeafBlind');
       var playPreviewBtn = document.getElementById('playPreviewVibrationBtn');
       if (!messageInput) return;
       var txt = messageInput.value.trim();
@@ -1259,132 +983,6 @@
       if (sendDb) sendDb.disabled = !isConnected() || !txt;
       if (playPreviewBtn) playPreviewBtn.disabled = !txt;
     }
-    document.getElementById('clearPreviewBtn').addEventListener('click', function () {
-      messageInput.value = '';
-      if (charCount) charCount.textContent = '0';
-      document.getElementById('sendBtn').disabled = true;
-      var playBtnEl = document.getElementById('playBtn');
-      if (playBtnEl) playBtnEl.disabled = true;
-      updateSendPreview();
-    });
-    document.getElementById('sendBtnDeafBlind').addEventListener('click', function () {
-      var txt = messageInput.value.trim();
-      if (!txt || !isConnected()) return;
-      sendMessage(txt);
-      messageInput.value = '';
-      if (charCount) charCount.textContent = '0';
-      document.getElementById('sendBtn').disabled = true;
-      var playBtnEl = document.getElementById('playBtn');
-      if (playBtnEl) playBtnEl.disabled = true;
-      updateSendPreview();
-    });
-    var playPreviewVibrationBtn = document.getElementById('playPreviewVibrationBtn');
-    if (playPreviewVibrationBtn) {
-      playPreviewVibrationBtn.addEventListener('click', function () {
-        var txt = messageInput.value.trim();
-        if (!txt) return;
-        var useG2 = document.getElementById('useGrade2') && document.getElementById('useGrade2').checked;
-        var patterns = useG2 ? textToVibrationPatternGrade2(txt) : textToVibrationPattern(txt);
-        var progressSection = document.getElementById('progressSection');
-        var progressText = document.getElementById('progressText');
-        if (progressSection) progressSection.classList.remove('hidden');
-        var outputTypes = [];
-        if (isVibrationSupported()) outputTypes.push('getaran');
-        if (audioSettings.enabled && isAudioSupported()) outputTypes.push('audio');
-        var outputText = outputTypes.length > 0 ? outputTypes.join(' + ') : 'output';
-        if (progressText) progressText.textContent = 'Memutar ' + outputText + ' preview…';
-        playVibrationPattern(patterns, function (p) {
-          if (progressText) progressText.textContent = 'Memutar: ' + p.current + ' / ' + p.total;
-          if (p.current >= p.total && progressSection) progressSection.classList.add('hidden');
-        });
-      });
-    }
-    var voiceBtnDeafBlind = document.getElementById('voiceBtnDeafBlind');
-    if (voiceBtnDeafBlind && voiceBtn) voiceBtnDeafBlind.addEventListener('click', function () { voiceBtn.click(); });
-    if (autoSendAfterVoiceEl) autoSendAfterVoiceEl.addEventListener('change', function () {
-      if (window.SettingsManager) window.SettingsManager.updateSetting('autoSendAfterVoice', this.checked);
-      settings.autoSendAfterVoice = this.checked;
-    });
-
-    // --- Input Braille 6 titik (on-screen keyboard) ---
-    // var brailleCell = [0, 0, 0, 0, 0, 0];
-    // function syncBrailleUI() {
-    //   document.querySelectorAll('.braille-dot').forEach(function (btn) {
-    //     var idx = parseInt(btn.getAttribute('data-dot'), 10) - 1;
-    //     btn.textContent = brailleCell[idx] ? '●' : '○';
-    //     btn.classList.toggle('bg-emerald-200', !!brailleCell[idx]);
-    //     btn.classList.toggle('dark:bg-emerald-700/50', !!brailleCell[idx]);
-    //   });
-    //   var key = brailleCell.join('');
-    //   var ch = REVERSE_BRAILLE_MAP[key];
-    //   var previewEl = document.getElementById('brailleCellPreview');
-    //   if (previewEl) previewEl.textContent = ch ? ('Karakter: "' + ch + '"') : 'Sel kosong';
-    // }
-    // function clearBrailleCell() {
-    //   brailleCell = [0, 0, 0, 0, 0, 0];
-    //   syncBrailleUI();
-    // }
-    // document.querySelectorAll('.braille-dot').forEach(function (btn) {
-    //   btn.addEventListener('click', function () {
-    //     var idx = parseInt(this.getAttribute('data-dot'), 10) - 1;
-    //     brailleCell[idx] = brailleCell[idx] ? 0 : 1;
-    //     syncBrailleUI();
-    //   });
-    // });
-    // document.getElementById('brailleAddCharBtn').addEventListener('click', function () {
-    //   var key = brailleCell.join('');
-    //   var ch = REVERSE_BRAILLE_MAP[key];
-    //   if (ch !== undefined) {
-    //     messageInput.value = messageInput.value + ch;
-    //     if (charCount) charCount.textContent = messageInput.value.length;
-    //     document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
-    //     var playBtnEl = document.getElementById('playBtn');
-    //     if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
-    //     updateSendPreview();
-    //   }
-    //   clearBrailleCell();
-    // });
-    // document.getElementById('brailleSpaceBtn').addEventListener('click', function () {
-    //   messageInput.value = messageInput.value + ' ';
-    //   if (charCount) charCount.textContent = messageInput.value.length;
-    //   document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
-    //   var playBtnEl = document.getElementById('playBtn');
-    //   if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
-    //   updateSendPreview();
-    // });
-    // document.getElementById('brailleBackspaceBtn').addEventListener('click', function () {
-    //   if (messageInput.value.length === 0) return;
-    //   messageInput.value = messageInput.value.slice(0, -1);
-    //   if (charCount) charCount.textContent = messageInput.value.length;
-    //   document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
-    //   var playBtnEl = document.getElementById('playBtn');
-    //   if (playBtnEl) playBtnEl.disabled = !messageInput.value.trim();
-    //   updateSendPreview();
-    // });
-
-    document.getElementById('showLogBtn').addEventListener('click', function () {
-      var logContent = document.getElementById('logContent');
-      if (logContent.classList.contains('hidden')) {
-        var history = window.MessageHistory ? window.MessageHistory.loadHistory() : [];
-        var today = new Date().toDateString();
-        var todayHistory = history.filter(function (m) {
-          return m.savedAt && new Date(m.savedAt).toDateString() === today;
-        });
-        if (todayHistory.length) {
-          logContent.innerHTML = todayHistory.slice(-50).reverse().map(function (m) {
-            var time = m.savedAt ? new Date(m.savedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
-            var from = (m.from && m.from.name) ? escapeHtml(m.from.name) : '?';
-            var raw = (m.text || '').substring(0, 60) + ((m.text || '').length > 60 ? '…' : '');
-            return time + ' ' + from + ': ' + escapeHtml(raw);
-          }).join('<br>');
-        } else {
-          logContent.textContent = 'Belum ada pesan hari ini.';
-        }
-        logContent.classList.remove('hidden');
-      } else {
-        logContent.classList.add('hidden');
-      }
-    });
 
     var onboardingOverlay = document.getElementById('onboardingOverlay');
     var onboardingClose = document.getElementById('onboardingClose');
@@ -1412,15 +1010,12 @@
       });
     });
 
-    function isConnected() {
-      return ws && ws.readyState === WebSocket.OPEN;
-    }
+  function isConnected() { return ws && ws.readyState === WebSocket.OPEN; }
+  window.isConnected = isConnected; // Expose globally for debugging
   }
 
-  if (document.readyState === 'loading')
-    document.addEventListener('DOMContentLoaded', init);
-  else
-    init();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 
   function clearMessages() {
     const messagesList = document.getElementById('messagesList');
@@ -1445,6 +1040,6 @@
     // Optional: Reset receipt tracking
     lastReceivedMessageId = null;
     lastReceivedMessageData = null;
-    if (messageIdToElement) messageIdToElement = {};
+  messageIdToElement = {};
   }
 })();
