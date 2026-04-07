@@ -504,6 +504,35 @@
     }
     return;
   }
+
+  ws.onmessage = function(event) {
+    try {
+      const msg = JSON.parse(event.data);
+      console.log('📩 Received:', msg);
+
+      if (msg.type === 'broadcast' || msg.type === 'message') {
+        addMessage(msg.data, false);
+
+        // Optional: vibration/audio playback
+        playMessageVibration(msg.data);
+
+        // Track last message
+        lastReceivedMessageId = msg.data.messageId;
+        lastReceivedMessageData = msg.data;
+
+        // Show read receipt UI
+        const row = document.getElementById('readReceiptRow');
+        if (row) row.classList.remove('hidden');
+      }
+
+      if (msg.type === 'typing') {
+        showTypingIndicator(msg.data);
+      }
+
+    } catch (e) {
+      console.error('❌ Failed to parse message:', e);
+    }
+  };
   
   ws.onopen = function() {
     console.log('✅ WebSocket connected');
@@ -553,6 +582,7 @@
   }
 
   function addMessage(data, isOwn) {
+    console.log('test');
     const list = document.getElementById('messagesList');
     const empty = document.getElementById('emptyMessages');
     if (empty) empty.classList.add('hidden');
