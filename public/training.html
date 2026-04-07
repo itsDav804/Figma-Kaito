@@ -196,7 +196,7 @@
       const word = trainingState.words[trainingState.current];
       const letters = word.replace(/[^A-Z]/gi,'').toUpperCase().split('');
       const morsePattern = letters.map(l => MORSE_MAP[l] || '').join(' ');
-      let html = `<div class="text-center mb-2">
+      html = `<div class="text-center mb-2">
         <div class="text-xs text-stone-500 mb-1">Current word</div>
         <div class="text-2xl font-bold mb-2 tracking-widest">${word}</div>
         <div class="text-xs text-stone-500 mb-1">Morse Pattern</div>
