@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1c1917" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c0a09" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Training Morse Kaito Whale">
+  <title>Training Morse - Kaito Whale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    (function() {
+      if (typeof tailwind === 'undefined') return;
+      var cfg = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Figtree', 'system-ui', 'sans-serif'],
+              display: ['Instrument Serif', 'Georgia', 'serif'],
+            },
+          },
+        },
+      };
+      if (typeof tailwind.config === 'function') {
+        tailwind.config(cfg);
+      } else {
+        tailwind.config = cfg;
+      }
+    })();
+  </script>
+  <style>
+    body { background: #d4f7d4; color: #1c1917; margin: 0; min-height: 100vh; font-family: 'Figtree', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+  </style>
+</head>
+<body class="min-h-screen bg-green-100 dark:bg-stone-900 text-stone-900 dark:text-stone-100 font-sans text-base antialiased transition-colors">
+  <div class="w-full md:w-1/2 md:mx-auto min-h-screen flex flex-col px-4 pb-10 pt-6 simple-layout">
+    <header class="flex justify-between items-center mb-4 relative">
+      <div>
+        <h1 class="font-display text-4xl text-stone-900 dark:text-stone-100 italic mb-2">Training Morse</h1>
+        <div class="text-xs text-stone-500 dark:text-stone-400 mb-2">Kaito Whale</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="darkModeToggle" class="p-3 rounded-xl bg-stone-200 dark:bg-stone-700 text-lg" aria-label="Toggle Dark Mode" title="Toggle Dark Mode">🌙</button>
+        <a href="index.html" class="p-3 rounded-xl bg-stone-200 dark:bg-stone-700 text-lg" aria-label="Kembali" title="Kembali">⬅️ Kembali</a>
+      </div>
+    </header>
+    <main>
+      <div id="trainingContent" class="w-full"></div>
+    </main>
+  </div>
+  <script>
+    // Dark mode toggle logic
+    const darkModeToggle = document.addEventListener ? document.getElementById('darkModeToggle') : null;
+    function setDarkMode(enabled) {
+      if (enabled) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('darkMode', '1');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('darkMode', '0');
+      }
+    }
+    function getDarkModePref() {
+      const ls = localStorage.getItem('darkMode');
+      if (ls !== null) return ls === '1';
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+      // Set initial mode
+      setDarkMode(getDarkModePref());
+      const btn = document.getElementById('darkModeToggle');
+      if (btn) {
+        btn.onclick = function() {
+          setDarkMode(!document.documentElement.classList.contains('dark'));
+        };
+      }
+    });
+    // Morse code map for A-Z (Latin)
+    const MORSE_MAP = {
+      'A': '.-',    'B': '-...',  'C': '-.-.',  'D': '-..',   'E': '.',
+      'F': '..-.',  'G': '--.',   'H': '....',  'I': '..',    'J': '.---',
+      'K': '-.-',   'L': '.-..',  'M': '--',    'N': '-.',    'O': '---',
+      'P': '.--.',  'Q': '--.-',  'R': '.-.',   'S': '...',   'T': '-',
+      'U': '..-',   'V': '...-',  'W': '.--',   'X': '-..-',  'Y': '-.--',
+      'Z': '--..',
+    };
+    const DICTIONARY_WORDS = [
+      'YA','TIDAK','MUNGKIN','TIDAK TAHU','MENGERTI','TIDAK MENGERTI',
+      'MAKAN','MINUM','MANDI','TIDUR','TOILET','OBAT','DUDUK','BERDIRI',
+      'LAPAR','HAUS','SAKIT','CAPEK','DINGIN','PANAS','PUSING','SESAK',
+      'SENANG','SEDIH','TAKUT','MARAH','TENANG','GELISAH',
+      'TOLONG','DARURAT','PULANG','BUTUH BANTUAN','ULANGI','SELESAI','DATANG','PERGI',
+      'DENGARKAN','TUNGGU','CEPAT','PELAN','LAGI',
+      'SEKARANG','NANTI','PAGI','MALAM'
+    ];
+    let trainingState = null;
+    function startTraining() {
+      trainingState = {
+        words: shuffleArray(DICTIONARY_WORDS.slice()),
+        current: 0,
+        correct: 0,
+        total: 0,
+        startTime: Date.now(),
+        perWord: [],
+        mode: 'input',
+      };
+      showTrainingWord();
+    }
+    function showTrainingWord() {
+      const content = document.getElementById('trainingContent');
+      if (!content) return;
+      if (trainingState.current >= trainingState.words.length) {
+        const time = Math.round((Date.now() - trainingState.startTime) / 1000);
+        const acc = trainingState.total ? Math.round(100 * trainingState.correct / trainingState.total) : 0;
+        content.innerHTML = `
+          <div class="text-center mb-4">
+            <div class="text-lg font-bold mb-2">Selesai!</div>
+            <div class="text-2xl font-bold text-emerald-700 dark:text-emerald-400">${acc}%</div>
+            <div class="text-base mb-2">Akurasi</div>
+            <div class="text-base">Waktu: ${time} detik</div>
+          </div>
+          <a href="index.html" class="w-full block py-3 rounded-xl bg-red-200 dark:bg-red-700 text-red-900 dark:text-white font-bold mt-2 text-center">Tutup</a>
+        `;
+        return;
+      }
+      const word = trainingState.words[trainingState.current];
+      const letters = word.replace(/[^A-Z]/gi,'').toUpperCase().split('');
+      const morsePattern = letters.map(l => MORSE_MAP[l] || '').join(' ');
+      let html = `<div class="text-center mb-2">
+        <div class="text-xs text-stone-500 mb-1">Current word</div>
+        <div class="text-2xl font-bold mb-2 tracking-widest">${word}</div>
+        <div class="text-xs text-stone-500 mb-1">Morse Pattern</div>
+        <div class="rounded-lg bg-stone-100 dark:bg-stone-700 py-2 px-4 mb-2 font-mono text-lg tracking-widest">${morsePattern}</div>
+      </div>`;
+      html += `<div class="flex flex-wrap justify-center gap-2 mb-4">`;
+      letters.forEach((l, i) => {
+        html += `<div class="flex flex-col items-center">
+          <div class="text-xs font-bold mb-1">${l}</div>
+          <input type="text" maxlength="5" data-idx="${i}" class="morse-input w-16 px-2 py-1 rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-center font-mono text-lg" placeholder=". -" autocomplete="off" spellcheck="false">
+        </div>`;
+      });
+      html += `</div>`;
+      html += `<div class="flex gap-2 w-full mt-2">
+        <button id="skipWordBtn" class="flex-1 py-3 rounded-xl bg-red-200 dark:bg-red-700 text-red-900 dark:text-white font-bold">Skip</button>
+        <button id="practiceWordBtn" class="flex-1 py-3 rounded-xl bg-emerald-200 dark:bg-emerald-700 text-emerald-900 dark:text-white font-bold">Practice</button>
+      </div>`;
+      content.innerHTML = html;
+      document.getElementById('skipWordBtn').onclick = () => {
+        trainingState.current++;
+        showTrainingWord();
+      };
+      document.getElementById('practiceWordBtn').onclick = () => checkTrainingWord(letters);
+    }
+    function checkTrainingWord(letters) {
+      const inputs = Array.from(document.querySelectorAll('.morse-input'));
+      let correct = 0;
+      let total = letters.length;
+      let feedback = '';
+      inputs.forEach((inp, i) => {
+        const val = (inp.value || '').replace(/\s+/g,'');
+        const expected = (MORSE_MAP[letters[i]] || '').replace(/\s+/g,'');
+        if (val === expected) {
+          feedback += `<span class="inline-block w-10 h-10 rounded-full bg-emerald-400 text-white font-bold text-lg text-center leading-10 mx-1">${letters[i]}</span>`;
+          inp.style.background = '#bbf7d0';
+          correct++;
+        } else {
+          feedback += `<span class="inline-block w-10 h-10 rounded-full bg-red-300 text-white font-bold text-lg text-center leading-10 mx-1">${letters[i]}</span>`;
+          inp.style.background = '#fecaca';
+        }
+        inp.disabled = true;
+      });
+      trainingState.correct += correct;
+      trainingState.total += total;
+      const content = document.getElementById('trainingContent');
+      content.innerHTML = `
+        <div class="text-center mb-2">
+          <div class="text-xs text-stone-500 mb-1">Letter Morse</div>
+          <div class="flex flex-wrap justify-center gap-2 mb-4">${feedback}</div>
+        </div>
+        <div class="flex gap-2 w-full mt-2">
+          <a href="index.html" class="flex-1 py-3 rounded-xl bg-red-200 dark:bg-red-700 text-red-900 dark:text-white font-bold text-center">Quit Practice</a>
+          <button id="nextWordBtn" class="flex-1 py-3 rounded-xl bg-emerald-200 dark:bg-emerald-700 text-emerald-900 dark:text-white font-bold">Next</button>
+        </div>
+        <div class="text-center text-xs text-stone-500 mt-2">Akurasi: ${Math.round(100*trainingState.correct/trainingState.total)}% &middot; Waktu: ${Math.round((Date.now()-trainingState.startTime)/1000)}s</div>
+      `;
+      document.getElementById('nextWordBtn').onclick = () => {
+        trainingState.current++;
+        showTrainingWord();
+      };
+    }
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+      startTraining();
+    });
+  </script>
+</body>
+</html>

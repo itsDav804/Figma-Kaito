@@ -152,6 +152,14 @@ document.addEventListener('DOMContentLoaded', function () {
       window.location.href = 'dictionary.html';
     });
   }
+  // Tombol Training di halaman utama
+  const trainingBtn = document.getElementById('openTrainingBtn');
+  if (trainingBtn) {
+    trainingBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.location.href = 'training.html';
+    });
+  }
 });
 /**
  * Konstanta untuk fitur tambahan: darurat, role, mood, Braille Grade 2
