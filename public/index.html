@@ -75,23 +75,23 @@
     <main class="flex-1 flex flex-col gap-4">
       <!-- Error Message -->
       <div id="errorMessage" class="hidden bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 text-lg text-red-800 dark:text-red-200" role="alert"></div>
-      <!-- Messages -->
-      <section id="messagesSection" class="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl overflow-hidden shadow-sm">
-        <div class="p-3 border-b border-stone-100 dark:border-stone-700">
-          <h2 class="font-bold text-stone-700 dark:text-stone-300 text-lg">Pesan</h2>
-        </div>
-        <div id="messagesList" class="p-3 max-h-80 overflow-y-auto space-y-2" role="log" aria-live="polite" aria-label="Daftar pesan">
-          <p id="emptyMessages" class="text-stone-400 dark:text-stone-500 text-lg text-center py-6">Belum ada pesan. Kirim yang pertama.</p>
-        </div>
-        <div id="readReceiptRow" class="hidden px-3 pb-2 flex gap-2 flex-wrap">
-          <button type="button" id="replayVibrationBtn" class="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl border-2 border-emerald-600 dark:border-emerald-500 text-emerald-700 dark:text-emerald-400 font-semibold text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 active:scale-[0.99] transition" aria-label="Ulangi getaran & suara pesan terakhir">🔁 Ulangi getaran & suara</button>
-          <button type="button" id="markReadBtn" class="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-emerald-600 dark:bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-500 dark:hover:bg-emerald-400 active:scale-[0.99] transition" aria-label="Tandai sudah dibaca">✓ Sudah baca</button>
-        </div>
-        <div id="typingIndicator" class="hidden px-3 pb-2 text-xs text-stone-500 dark:text-stone-400 italic" aria-live="polite"></div>
-      </section>
-
-      <!-- Input -->
+      
       <section class="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl overflow-hidden shadow-sm">
+        <!-- Messages -->
+        <section id="messagesSection" class="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl overflow-hidden shadow-sm">
+          <div class="p-3 border-b border-stone-100 dark:border-stone-700">
+            <h2 class="font-bold text-stone-700 dark:text-stone-300 text-lg">Pesan</h2>
+          </div>
+          <div id="messagesList" class="p-3 h-[75vh] max-h-[75vh] overflow-y-auto space-y-2" role="log" aria-live="polite" aria-label="Daftar pesan">
+            <p id="emptyMessages" class="text-stone-400 dark:text-stone-500 text-lg text-center py-6">Belum ada pesan. Kirim yang pertama.</p>
+          </div>
+          <div id="readReceiptRow" class="hidden px-3 pb-2 flex gap-2 flex-wrap">
+            <button type="button" id="replayVibrationBtn" class="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl border-2 border-emerald-600 dark:border-emerald-500 text-emerald-700 dark:text-emerald-400 font-semibold text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 active:scale-[0.99] transition" aria-label="Ulangi getaran & suara pesan terakhir">🔁 Ulangi getaran & suara</button>
+            <button type="button" id="markReadBtn" class="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-emerald-600 dark:bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-500 dark:hover:bg-emerald-400 active:scale-[0.99] transition" aria-label="Tandai sudah dibaca">✓ Sudah baca</button>
+          </div>
+          <div id="typingIndicator" class="hidden px-3 pb-2 text-xs text-stone-500 dark:text-stone-400 italic" aria-live="polite"></div>
+        </section>
+        <!-- Input -->
         <div class="p-4 space-y-4">
           <!-- Mode standar: ketik + mood + preview Braille -->
           <button id="togglebtn" class="bg-stone-200 dark:bg-stone-600 text-stone-700 dark:text-stone-300 font-semibold text-sm py-2 px-4 rounded-xl hover:bg-stone-300 dark:hover:bg-stone-500 active:scale-[0.99] transition">Keyboard</button>
@@ -191,7 +191,14 @@
     } catch (e) {}
   </script>
   <script src="app.js"></script>
-  <!-- Training sekarang di halaman terpisah -->
+  <!-- Morse Training Modal -->
+  <div id="trainingModal" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-stone-800 rounded-xl max-w-md w-full p-6 shadow-xl overflow-y-auto max-h-[95vh] relative flex flex-col items-center">
+      <button type="button" id="closeTrainingBtn" class="absolute top-2 right-2 p-2 rounded-full bg-stone-200 dark:bg-stone-700 text-xl" aria-label="Tutup Latihan">✕</button>
+      <h2 class="font-display text-2xl text-center mb-2 text-stone-900 dark:text-stone-100">Training Morse</h2>
+      <div id="trainingContent" class="w-full"></div>
+    </div>
+  </div>
   <script>
     // Morse code map for A-Z (Latin)
     const MORSE_MAP = {
