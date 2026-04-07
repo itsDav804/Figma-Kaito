@@ -35,6 +35,10 @@
   </script>
   <style>
     body { background: #d4f7d4; color: #1c1917; margin: 0; min-height: 100vh; font-family: 'Figtree', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body.dark, .dark body {
+      background: #0c0a09 !important;
+      color: #f3f3f3 !important;
+    }
   </style>
 </head>
 <body class="min-h-screen bg-green-100 dark:bg-stone-900 text-stone-900 dark:text-stone-100 font-sans text-base antialiased transition-colors">
@@ -56,13 +60,14 @@
   </div>
   <script>
     // Dark mode toggle logic
-    const darkModeToggle = document.addEventListener ? document.getElementById('darkModeToggle') : null;
     function setDarkMode(enabled) {
       if (enabled) {
         document.documentElement.classList.add('dark');
+        document.body.classList.add('dark');
         localStorage.setItem('darkMode', '1');
       } else {
         document.documentElement.classList.remove('dark');
+        document.body.classList.remove('dark');
         localStorage.setItem('darkMode', '0');
       }
     }
@@ -81,21 +86,23 @@
     function renderTrainingSetup() {
       const setup = document.getElementById('trainingSetup');
       if (!setup) return;
-      let html = `<div class="max-w-lg mx-auto bg-stone-900 dark:bg-stone-900 text-white rounded-2xl p-6 mt-4 shadow-lg">
-        <button onclick="window.location.href='index.html'" class="mb-4 text-left text-stone-400 hover:text-white">&larr; Back to Messages</button>
-        <h2 class="text-2xl font-bold mb-2">Training Mode</h2>
-        <div class="mb-2 text-stone-300">Select words for the user to practice</div>`;
+      let html = `<div class="max-w-lg mx-auto bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl p-6 mt-4 shadow-lg">
+        <button onclick=\"window.location.href='index.html'\" class=\"mb-4 text-left text-stone-400 dark:text-stone-500 hover:text-stone-700 dark:hover:text-stone-200 transition\">&larr; Back to Messages</button>
+        <h2 class=\"text-2xl font-bold mb-2 text-stone-900 dark:text-stone-100\">Training Mode</h2>
+        <div class=\"mb-2 text-stone-500 dark:text-stone-400\">Select words for the user to practice</div>`;
       WORD_GROUPS.forEach(group => {
-        html += `<div class="mt-4 mb-2 font-semibold text-stone-200">${group.label}</div><div class="flex flex-wrap gap-2 mb-2">`;
+        html += `<div class=\"mt-4 mb-2 font-semibold text-stone-700 dark:text-stone-200\">${group.label}</div><div class=\"flex flex-wrap gap-2 mb-2\">`;
         group.words.forEach(word => {
-          const active = selectedWords.includes(word) ? 'bg-stone-700 text-white' : 'bg-stone-800 text-stone-300';
-          html += `<button type="button" class="px-4 py-2 rounded-xl font-bold text-base focus:outline-none ${active}" data-word="${word}">${word}</button>`;
+          const active = selectedWords.includes(word)
+            ? 'bg-emerald-200 dark:bg-emerald-700 text-emerald-900 dark:text-white border-emerald-400 dark:border-emerald-500'
+            : 'bg-stone-100 dark:bg-stone-700 text-stone-900 dark:text-stone-100 border-stone-200 dark:border-stone-600';
+          html += `<button type=\"button\" class=\"px-4 py-2 rounded-xl font-bold text-base border focus:outline-none transition ${active}\" data-word=\"${word}\">${word}</button>`;
         });
         html += `</div>`;
       });
-      html += `<div class="mt-6 mb-2 font-semibold text-stone-200">Add Custom Word</div>
-        <div class="flex gap-2 mb-4"><input id="customWordInput" type="text" class="flex-1 px-3 py-2 rounded-lg bg-stone-800 text-white border border-stone-700 focus:outline-none" placeholder="Type a word..." maxlength="20"><button id="addCustomWordBtn" class="px-4 py-2 rounded-xl bg-stone-700 text-white font-bold">Add</button></div>`;
-      html += `<button id="startTrainingBtn" class="w-full py-3 rounded-xl bg-stone-700 text-stone-400 font-bold text-lg mt-2" disabled>Start Training (0 words)</button>`;
+      html += `<div class=\"mt-6 mb-2 font-semibold text-stone-700 dark:text-stone-200\">Add Custom Word</div>
+        <div class=\"flex gap-2 mb-4\"><input id=\"customWordInput\" type=\"text\" class=\"flex-1 px-3 py-2 rounded-lg bg-stone-100 dark:bg-stone-700 text-stone-900 dark:text-stone-100 border border-stone-300 dark:border-stone-600 focus:outline-none\" placeholder=\"Type a word...\" maxlength=\"20\"><button id=\"addCustomWordBtn\" class=\"px-4 py-2 rounded-xl bg-emerald-700 dark:bg-emerald-600 text-white font-bold\">Add</button></div>`;
+      html += `<button id=\"startTrainingBtn\" class=\"w-full py-3 rounded-xl bg-emerald-700 dark:bg-emerald-600 text-white font-bold text-lg mt-2 disabled:opacity-50 disabled:pointer-events-none transition\" disabled>Start Training (0 words)</button>`;
       html += `</div>`;
       setup.innerHTML = html;
       // Add listeners
@@ -107,97 +114,69 @@
           } else {
             selectedWords.push(w);
           }
-          // --- Training Mode Select ---
-          // Ambil kosakata dari dictionary (features.js)
-          const DICTIONARY_GROUPS = [
-            { label: 'Konfirmasi', key: 'confirmation' },
-            { label: 'Kebutuhan', key: 'needs' },
-            { label: 'Kondisi', key: 'condition' },
-            { label: 'Emosi', key: 'emotion' },
-            { label: 'Bantuan', key: 'help' },
-            { label: 'Interaksi', key: 'interaction' },
-            { label: 'Waktu', key: 'time' },
-          ];
-          // Ambil data dictionary dari window (karena features.js sudah di-load di index.html)
-          let TACTILE_DICTIONARY = window.TACTILE_DICTIONARY;
-          if (!TACTILE_DICTIONARY) {
-            // fallback jika belum ada, hardcode (minimal)
-            TACTILE_DICTIONARY = {
-              confirmation: [ { word: 'YA' }, { word: 'TIDAK' } ],
-              needs: [ { word: 'MAKAN' }, { word: 'MINUM' } ],
-              condition: [ { word: 'LAPAR' }, { word: 'SAKIT' } ],
-              emotion: [ { word: 'SENANG' }, { word: 'SEDIH' } ],
-              help: [ { word: 'TOLONG' }, { word: 'DARURAT' } ],
-              interaction: [ { word: 'DENGARKAN' }, { word: 'TUNGGU' } ],
-              time: [ { word: 'SEKARANG' }, { word: 'NANTI' } ],
-            };
-          }
-          let selectedWords = [];
-          function renderTrainingSetup() {
-            const setup = document.getElementById('trainingSetup');
-            if (!setup) return;
-            let html = `<div class="max-w-lg mx-auto bg-stone-900 dark:bg-stone-900 text-white rounded-2xl p-6 mt-4 shadow-lg">
-              <button onclick="window.location.href='index.html'" class="mb-4 text-left text-stone-400 hover:text-white">&larr; Kembali</button>
-              <h2 class="text-2xl font-bold mb-2">Training Mode</h2>
-              <div class="mb-2 text-stone-300">Pilih kata yang ingin dilatih</div>`;
-            DICTIONARY_GROUPS.forEach(group => {
-              const items = (TACTILE_DICTIONARY[group.key] || []);
-              if (!items.length) return;
-              html += `<div class="mt-4 mb-2 font-semibold text-stone-200">${group.label}</div><div class="flex flex-wrap gap-2 mb-2">`;
-              items.forEach(item => {
-                const word = item.word;
-                const active = selectedWords.includes(word) ? 'bg-stone-700 text-white' : 'bg-stone-800 text-stone-300';
-                html += `<button type="button" class="px-4 py-2 rounded-xl font-bold text-base focus:outline-none ${active}" data-word="${word}">${word}</button>`;
-              });
-              html += `</div>`;
-            });
-            html += `<div class="mt-6 mb-2 font-semibold text-stone-200">Tambah Kata Custom</div>
-              <div class="flex gap-2 mb-4"><input id="customWordInput" type="text" class="flex-1 px-3 py-2 rounded-lg bg-stone-800 text-white border border-stone-700 focus:outline-none" placeholder="Ketik kata..." maxlength="20"><button id="addCustomWordBtn" class="px-4 py-2 rounded-xl bg-stone-700 text-white font-bold">Add</button></div>`;
-            html += `<button id="startTrainingBtn" class="w-full py-3 rounded-xl bg-stone-700 text-stone-400 font-bold text-lg mt-2" disabled>Mulai Training (0 kata)</button>`;
-            html += `</div>`;
-            setup.innerHTML = html;
-            // Add listeners
-            setup.querySelectorAll('button[data-word]').forEach(btn => {
-              btn.onclick = function() {
-                const w = btn.getAttribute('data-word');
-                if (selectedWords.includes(w)) {
-                  selectedWords = selectedWords.filter(x => x !== w);
-                } else {
-                  selectedWords.push(w);
-                }
-                renderTrainingSetup();
-              };
-            });
-            setup.querySelector('#addCustomWordBtn').onclick = function() {
-              const inp = setup.querySelector('#customWordInput');
-              const val = (inp.value || '').trim().toUpperCase();
-              if (val && !selectedWords.includes(val)) {
-                selectedWords.push(val);
-                inp.value = '';
-                renderTrainingSetup();
-              }
-            };
-            const startBtn = setup.querySelector('#startTrainingBtn');
-            if (selectedWords.length > 0) {
-              startBtn.disabled = false;
-              startBtn.classList.remove('text-stone-400','bg-stone-700');
-              startBtn.classList.add('text-white','bg-emerald-700','hover:bg-emerald-800');
-              startBtn.textContent = `Mulai Training (${selectedWords.length} kata)`;
-            } else {
-              startBtn.disabled = true;
-              startBtn.classList.add('text-stone-400','bg-stone-700');
-              startBtn.classList.remove('text-white','bg-emerald-700','hover:bg-emerald-800');
-              startBtn.textContent = 'Mulai Training (0 kata)';
-            }
-            startBtn.onclick = function() {
-              if (selectedWords.length > 0) {
-                setup.style.display = 'none';
-                startTraining(selectedWords);
-              }
-            };
-          }
-        }
+          renderTrainingSetup();
+        };
       });
+      setup.querySelector('#addCustomWordBtn').onclick = function() {
+        const inp = setup.querySelector('#customWordInput');
+        const val = (inp.value || '').trim().toUpperCase();
+        if (val && !selectedWords.includes(val)) {
+          selectedWords.push(val);
+          inp.value = '';
+          renderTrainingSetup();
+        }
+      };
+      const startBtn = setup.querySelector('#startTrainingBtn');
+      if (selectedWords.length > 0) {
+        startBtn.disabled = false;
+        startBtn.classList.remove('text-stone-400','bg-stone-700');
+        startBtn.classList.add('text-white','bg-emerald-700','hover:bg-emerald-800');
+        startBtn.textContent = `Start Training (${selectedWords.length} word${selectedWords.length>1?'s':''})`;
+      } else {
+        startBtn.disabled = true;
+        startBtn.classList.add('text-stone-400','bg-stone-700');
+        startBtn.classList.remove('text-white','bg-emerald-700','hover:bg-emerald-800');
+        startBtn.textContent = 'Start Training (0 words)';
+      }
+      startBtn.onclick = function() {
+        if (selectedWords.length > 0) {
+          setup.style.display = 'none';
+          startTraining(selectedWords);
+        }
+      };
+    }
+    // Morse code map for A-Z (Latin)
+    const MORSE_MAP = {
+      'A': '.-',    'B': '-...',  'C': '-.-.',  'D': '-..',   'E': '.',
+      'F': '..-.',  'G': '--.',   'H': '....',  'I': '..',    'J': '.---',
+      'K': '-.-',   'L': '.-..',  'M': '--',    'N': '-.',    'O': '---',
+      'P': '.--.',  'Q': '--.-',  'R': '.-.',   'S': '...',   'T': '-',
+      'U': '..-',   'V': '...-',  'W': '.--',   'X': '-..-',  'Y': '-.--',
+      'Z': '--..',
+    };
+    const DICTIONARY_WORDS = [
+      'YA','TIDAK','MUNGKIN','TIDAK TAHU','MENGERTI','TIDAK MENGERTI',
+      'MAKAN','MINUM','MANDI','TIDUR','TOILET','OBAT','DUDUK','BERDIRI',
+      'LAPAR','HAUS','SAKIT','CAPEK','DINGIN','PANAS','PUSING','SESAK',
+      'SENANG','SEDIH','TAKUT','MARAH','TENANG','GELISAH',
+      'TOLONG','DARURAT','PULANG','BUTUH BANTUAN','ULANGI','SELESAI','DATANG','PERGI',
+      'DENGARKAN','TUNGGU','CEPAT','PELAN','LAGI',
+      'SEKARANG','NANTI','PAGI','MALAM'
+    ];
+    let trainingState = null;
+    function startTraining(words) {
+      trainingState = {
+        words: shuffleArray(words.slice()),
+        current: 0,
+        correct: 0,
+        total: 0,
+        startTime: Date.now(),
+        perWord: [],
+        mode: 'input',
+      };
+      showTrainingWord();
+    }
+    function showTrainingWord() {
       const content = document.getElementById('trainingContent');
       if (!content) return;
       if (trainingState.current >= trainingState.words.length) {
@@ -286,7 +265,25 @@
       }
       return arr;
     }
+    // Aktifkan dark mode secepat mungkin saat load
+    (function() {
+      if (getDarkModePref()) {
+        document.documentElement.classList.add('dark');
+        document.body.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.body.classList.remove('dark');
+      }
+    })();
     document.addEventListener('DOMContentLoaded', function () {
+      // Set dark mode toggle
+      const btn = document.getElementById('darkModeToggle');
+      if (btn) {
+        btn.onclick = function() {
+          const isDark = document.documentElement.classList.contains('dark');
+          setDarkMode(!isDark);
+        };
+      }
       document.getElementById('trainingContent').innerHTML = '';
       renderTrainingSetup();
     });
