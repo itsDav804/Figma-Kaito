@@ -353,15 +353,6 @@
       });
     }, Promise.resolve());
   }
-
-  function testAudio() {
-    const testPattern = [
-      { type: 'vibrate', duration: 200 },
-      { type: 'pause', duration: 100 },
-      { type: 'vibrate', duration: 400 }
-    ];
-    playAudioPattern(testPattern);
-  }
 // --- Vibration (Web API) ---
   function isVibrationSupported() {
     return typeof navigator !== 'undefined' && navigator.vibrate;
@@ -416,14 +407,6 @@
     ]).then(() => undefined);
   }
 
-  function stopVibration() {
-    if (isVibrationSupported()) navigator.vibrate(0);
-  }
-
-  function testVibration() {
-    if (isVibrationSupported()) navigator.vibrate(200);
-  }
-
   // Putar pola mentah (array ms) — untuk darurat, role, mood
   function playRawPattern(arr) {
     if ((!isVibrationSupported() && !isAudioSupported()) || !arr.length) return Promise.resolve();
@@ -473,93 +456,92 @@
   function connect() {
     console.log('🔌 Attempting to connect...');
   
-  const urlInput = document.getElementById('serverUrl');
-  const nameInput = document.getElementById('userName');
-  const connectBtn = document.getElementById('connectBtn');
-  
-  let wsUrl = (urlInput?.value || '').trim() || getDefaultWsUrl();
-  if (!wsUrl.startsWith('ws://') && !wsUrl.startsWith('wss://')) {
-    wsUrl = 'ws://' + wsUrl;
-  }
-  
-  userName = (nameInput?.value || '').trim();
-  
-  // Close existing connection
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.close();
-  }
-  
-  setStatus('connecting', '⏳ Menghubungkan...');
-  if (connectBtn) connectBtn.disabled = true;
-  
-  try {
-    ws = new WebSocket(wsUrl);
-    console.log('📡 WebSocket created:', wsUrl);
-  } catch (e) {
-    console.error('❌ WebSocket creation failed:', e);
-    setStatus('error', '✗ Error');
-    if (connectBtn) {
-      connectBtn.disabled = false;
-      connectBtn.textContent = '🔗 Hubungkan';
+    const urlInput = document.getElementById('serverUrl');
+    const nameInput = document.getElementById('userName');
+    const connectBtn = document.getElementById('connectBtn');
+    
+    let wsUrl = (urlInput?.value || '').trim() || getDefaultWsUrl();
+    if (!wsUrl.startsWith('ws://') && !wsUrl.startsWith('wss://')) {
+      wsUrl = 'ws://' + wsUrl;
     }
-    return;
-  }
-
-  ws.onmessage = function(event) {
+    
+    userName = (nameInput?.value || '').trim();
+    
+    // Close existing connection
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.close();
+    }
+    
+    setStatus('connecting', '⏳ Menghubungkan...');
+    if (connectBtn) connectBtn.disabled = true;
+    
     try {
-      const msg = JSON.parse(event.data);
-      console.log('📩 Received:', msg);
-
-      if (msg.type === 'broadcast' || msg.type === 'message') {
-        addMessage(msg.data, false);
-
-        // Optional: vibration/audio playback
-        playMessageVibration(msg.data);
-
-        // Track last message
-        lastReceivedMessageId = msg.data.messageId;
-        lastReceivedMessageData = msg.data;
-
-        // Show read receipt UI
-        const row = document.getElementById('readReceiptRow');
-        if (row) row.classList.remove('hidden');
-      }
-
-      if (msg.type === 'typing') {
-        showTypingIndicator(msg.data);
-      }
-
+      ws = new WebSocket(wsUrl);
+      console.log('📡 WebSocket created:', wsUrl);
     } catch (e) {
-      console.error('❌ Failed to parse message:', e);
+      console.error('❌ WebSocket creation failed:', e);
+      setStatus('error', '✗ Error');
+      if (connectBtn) {
+        connectBtn.disabled = false;
+        connectBtn.textContent = '🔗 Hubungkan';
+      }
+      return;
     }
-  };
-  
-  ws.onopen = function() {
-    console.log('✅ WebSocket connected');
-    clearMessages();
-    setStatus('connected', '✓ Terhubung');
-    if (connectBtn) {
-      connectBtn.textContent = '🔌 Putuskan';
-      connectBtn.disabled = false;
-    }
-    // ... rest of onopen logic
-  };
-  
-  ws.onerror = function(error) {
-    console.error('❌ WebSocket error:', error);
-    setStatus('error', '✗ Error koneksi');
-    if (connectBtn) connectBtn.disabled = false;
-  };
-  
-  ws.onclose = function(event) {
-    console.log('🔌 WebSocket closed:', event.code, event.reason);
-    ws = null;
-    setStatus('', 'Terputus');
-    if (connectBtn) {
-      connectBtn.textContent = '🔗 Hubungkan';
-      connectBtn.disabled = false;
-    }
-  };
+
+    ws.onmessage = function(event) {
+      try {
+        const msg = JSON.parse(event.data);
+        console.log('📩 Received:', msg);
+
+        if (msg.type === 'broadcast' || msg.type === 'message') {
+          addMessage(msg.data, false);
+
+          // Optional: vibration/audio playback
+          playMessageVibration(msg.data);
+
+          // Track last message
+          lastReceivedMessageId = msg.data.messageId;
+          lastReceivedMessageData = msg.data;
+
+          // Show read receipt UI
+          const row = document.getElementById('readReceiptRow');
+          if (row) row.classList.remove('hidden');
+        }
+
+        if (msg.type === 'typing') {
+          showTypingIndicator(msg.data);
+        }
+
+      } catch (e) {
+        console.error('❌ Failed to parse message:', e);
+      }
+    };
+    
+    ws.onopen = function() {
+      console.log('✅ WebSocket connected');
+      loadRecentMessages();
+      setStatus('connected', '✓ Terhubung');
+      if (connectBtn) {
+        connectBtn.textContent = '🔌 Putuskan';
+        connectBtn.disabled = false;
+      }
+    };
+    
+    ws.onerror = function(error) {
+      console.error('❌ WebSocket error:', error);
+      setStatus('error', '✗ Error koneksi');
+      if (connectBtn) connectBtn.disabled = false;
+    };
+    
+    ws.onclose = function(event) {
+      console.log('🔌 WebSocket closed:', event.code, event.reason);
+      ws = null;
+      setStatus('', 'Terputus');
+      if (connectBtn) {
+        connectBtn.textContent = '🔗 Hubungkan';
+        connectBtn.disabled = false;
+      }
+    };
   }
   // Auto-connect on load
   connect();
@@ -580,9 +562,34 @@
     if (hours < 24) return hours + ' jam lalu';
     return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   }
+  
+  function scheduleTimeUpdate(element, timestamp) {
+    function update() {
+      const now = Date.now();
+      const diff = now - timestamp;
+
+      let nextUpdate;
+
+      if (diff < 60 * 60 * 1000) {
+        // < 1 hour → update every minute
+        nextUpdate = 60 * 1000;
+      } else if (diff < 24 * 60 * 60 * 1000) {
+        // < 1 day → update every hour
+        nextUpdate = 60 * 60 * 1000;
+      } else {
+        // >= 1 day → update every day
+        nextUpdate = 24 * 60 * 60 * 1000;
+      }
+
+      element.textContent = formatTime(timestamp);
+
+      setTimeout(update, nextUpdate);
+    }
+
+    update();
+  }
 
   function addMessage(data, isOwn) {
-    console.log('test');
     const list = document.getElementById('messagesList');
     const empty = document.getElementById('emptyMessages');
     if (empty) empty.classList.add('hidden');
@@ -613,6 +620,7 @@
     const timeEl = document.createElement('span');
     timeEl.className = 'text-xs text-stone-400 dark:text-stone-500';
     timeEl.textContent = time;
+    scheduleTimeUpdate(timeEl, timestamp);
     timeEl.setAttribute('aria-label', 'Dikirim ' + time);
     
     div.appendChild(sender);
@@ -633,6 +641,28 @@
     setTimeout(() => {
       list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' });
     }, 10);
+  }
+
+  function loadRecentMessages() {
+    if (!window.MessageHistory) return;
+
+    const history = window.MessageHistory.loadHistory();
+    const now = Date.now();
+    const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+
+    // Filter: only messages within last week
+    const recent = history.filter(msg => {
+      const ts = msg.timestamp || msg.savedAt;
+      return ts && (now - ts <= ONE_WEEK);
+    });
+
+    // Take last 5
+    const lastFive = recent.slice(-5);
+
+    // Render them
+    lastFive.forEach(msg => {
+      addMessage(msg, msg.isOwn || false);
+    });
   }
 
   let typingTimeout = null;
@@ -1040,8 +1070,8 @@
       });
     });
 
-  function isConnected() { return ws && ws.readyState === WebSocket.OPEN; }
-  window.isConnected = isConnected; // Expose globally for debugging
+    function isConnected() { return ws && ws.readyState === WebSocket.OPEN; }
+    window.isConnected = isConnected; // Expose globally for debugging
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
@@ -1062,14 +1092,9 @@
       messagesList.appendChild(emptyMessages);
     }
     
-    // Optional: Clear in-memory history if using MessageHistory module
-    if (window.MessageHistory && typeof window.MessageHistory.clear === 'function') {
-      window.MessageHistory.clear();
-    }
-    
     // Optional: Reset receipt tracking
     lastReceivedMessageId = null;
     lastReceivedMessageData = null;
-  messageIdToElement = {};
+    messageIdToElement = {};
   }
 })();

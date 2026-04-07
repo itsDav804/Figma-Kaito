@@ -8,17 +8,27 @@ const MAX_HISTORY = 100; // Max messages to store
 
 function saveMessage(message) {
   try {
-    const history = loadHistory();
+    let history = loadHistory();
+    const now = Date.now();
+    const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+
+    // 🧹 Remove messages older than 7 days
+    history = history.filter(msg => {
+      const ts = msg.timestamp || msg.savedAt;
+      return ts && (now - ts <= ONE_WEEK);
+    });
+
+    // ➕ Add new message
     history.push({
       ...message,
-      savedAt: Date.now()
+      savedAt: now
     });
-    
-    // Keep only last MAX_HISTORY messages
+
+    // 🔒 Keep max limit
     if (history.length > MAX_HISTORY) {
       history.shift();
     }
-    
+
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
     return true;
   } catch (e) {
