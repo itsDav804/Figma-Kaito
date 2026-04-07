@@ -51,6 +51,7 @@
     </header>
     <main>
       <div id="trainingContent" class="w-full"></div>
+      <div id="trainingSetup" class="w-full"></div>
     </main>
   </div>
   <script>
@@ -70,48 +71,131 @@
       if (ls !== null) return ls === '1';
       return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
-    document.addEventListener('DOMContentLoaded', function () {
-      // Set initial mode
-      setDarkMode(getDarkModePref());
-      const btn = document.getElementById('darkModeToggle');
-      if (btn) {
-        btn.onclick = function() {
-          setDarkMode(!document.documentElement.classList.contains('dark'));
-        };
-      }
-    });
-    // Morse code map for A-Z (Latin)
-    const MORSE_MAP = {
-      'A': '.-',    'B': '-...',  'C': '-.-.',  'D': '-..',   'E': '.',
-      'F': '..-.',  'G': '--.',   'H': '....',  'I': '..',    'J': '.---',
-      'K': '-.-',   'L': '.-..',  'M': '--',    'N': '-.',    'O': '---',
-      'P': '.--.',  'Q': '--.-',  'R': '.-.',   'S': '...',   'T': '-',
-      'U': '..-',   'V': '...-',  'W': '.--',   'X': '-..-',  'Y': '-.--',
-      'Z': '--..',
-    };
-    const DICTIONARY_WORDS = [
-      'YA','TIDAK','MUNGKIN','TIDAK TAHU','MENGERTI','TIDAK MENGERTI',
-      'MAKAN','MINUM','MANDI','TIDUR','TOILET','OBAT','DUDUK','BERDIRI',
-      'LAPAR','HAUS','SAKIT','CAPEK','DINGIN','PANAS','PUSING','SESAK',
-      'SENANG','SEDIH','TAKUT','MARAH','TENANG','GELISAH',
-      'TOLONG','DARURAT','PULANG','BUTUH BANTUAN','ULANGI','SELESAI','DATANG','PERGI',
-      'DENGARKAN','TUNGGU','CEPAT','PELAN','LAGI',
-      'SEKARANG','NANTI','PAGI','MALAM'
+    // --- Training Mode Select ---
+    const WORD_GROUPS = [
+      { label: 'Basic Words', words: ['HI','OK','YES','NO','GO','STOP'] },
+      { label: 'Common Words', words: ['HELP','WATER','FOOD','REST','PAIN','GOOD'] },
+      { label: 'Emergency Words', words: ['SOS','URGENT','CALL','NEED','NOW','PLEASE'] },
     ];
-    let trainingState = null;
-    function startTraining() {
-      trainingState = {
-        words: shuffleArray(DICTIONARY_WORDS.slice()),
-        current: 0,
-        correct: 0,
-        total: 0,
-        startTime: Date.now(),
-        perWord: [],
-        mode: 'input',
-      };
-      showTrainingWord();
-    }
-    function showTrainingWord() {
+    let selectedWords = [];
+    function renderTrainingSetup() {
+      const setup = document.getElementById('trainingSetup');
+      if (!setup) return;
+      let html = `<div class="max-w-lg mx-auto bg-stone-900 dark:bg-stone-900 text-white rounded-2xl p-6 mt-4 shadow-lg">
+        <button onclick="window.location.href='index.html'" class="mb-4 text-left text-stone-400 hover:text-white">&larr; Back to Messages</button>
+        <h2 class="text-2xl font-bold mb-2">Training Mode</h2>
+        <div class="mb-2 text-stone-300">Select words for the user to practice</div>`;
+      WORD_GROUPS.forEach(group => {
+        html += `<div class="mt-4 mb-2 font-semibold text-stone-200">${group.label}</div><div class="flex flex-wrap gap-2 mb-2">`;
+        group.words.forEach(word => {
+          const active = selectedWords.includes(word) ? 'bg-stone-700 text-white' : 'bg-stone-800 text-stone-300';
+          html += `<button type="button" class="px-4 py-2 rounded-xl font-bold text-base focus:outline-none ${active}" data-word="${word}">${word}</button>`;
+        });
+        html += `</div>`;
+      });
+      html += `<div class="mt-6 mb-2 font-semibold text-stone-200">Add Custom Word</div>
+        <div class="flex gap-2 mb-4"><input id="customWordInput" type="text" class="flex-1 px-3 py-2 rounded-lg bg-stone-800 text-white border border-stone-700 focus:outline-none" placeholder="Type a word..." maxlength="20"><button id="addCustomWordBtn" class="px-4 py-2 rounded-xl bg-stone-700 text-white font-bold">Add</button></div>`;
+      html += `<button id="startTrainingBtn" class="w-full py-3 rounded-xl bg-stone-700 text-stone-400 font-bold text-lg mt-2" disabled>Start Training (0 words)</button>`;
+      html += `</div>`;
+      setup.innerHTML = html;
+      // Add listeners
+      setup.querySelectorAll('button[data-word]').forEach(btn => {
+        btn.onclick = function() {
+          const w = btn.getAttribute('data-word');
+          if (selectedWords.includes(w)) {
+            selectedWords = selectedWords.filter(x => x !== w);
+          } else {
+            selectedWords.push(w);
+          }
+          // --- Training Mode Select ---
+          // Ambil kosakata dari dictionary (features.js)
+          const DICTIONARY_GROUPS = [
+            { label: 'Konfirmasi', key: 'confirmation' },
+            { label: 'Kebutuhan', key: 'needs' },
+            { label: 'Kondisi', key: 'condition' },
+            { label: 'Emosi', key: 'emotion' },
+            { label: 'Bantuan', key: 'help' },
+            { label: 'Interaksi', key: 'interaction' },
+            { label: 'Waktu', key: 'time' },
+          ];
+          // Ambil data dictionary dari window (karena features.js sudah di-load di index.html)
+          let TACTILE_DICTIONARY = window.TACTILE_DICTIONARY;
+          if (!TACTILE_DICTIONARY) {
+            // fallback jika belum ada, hardcode (minimal)
+            TACTILE_DICTIONARY = {
+              confirmation: [ { word: 'YA' }, { word: 'TIDAK' } ],
+              needs: [ { word: 'MAKAN' }, { word: 'MINUM' } ],
+              condition: [ { word: 'LAPAR' }, { word: 'SAKIT' } ],
+              emotion: [ { word: 'SENANG' }, { word: 'SEDIH' } ],
+              help: [ { word: 'TOLONG' }, { word: 'DARURAT' } ],
+              interaction: [ { word: 'DENGARKAN' }, { word: 'TUNGGU' } ],
+              time: [ { word: 'SEKARANG' }, { word: 'NANTI' } ],
+            };
+          }
+          let selectedWords = [];
+          function renderTrainingSetup() {
+            const setup = document.getElementById('trainingSetup');
+            if (!setup) return;
+            let html = `<div class="max-w-lg mx-auto bg-stone-900 dark:bg-stone-900 text-white rounded-2xl p-6 mt-4 shadow-lg">
+              <button onclick="window.location.href='index.html'" class="mb-4 text-left text-stone-400 hover:text-white">&larr; Kembali</button>
+              <h2 class="text-2xl font-bold mb-2">Training Mode</h2>
+              <div class="mb-2 text-stone-300">Pilih kata yang ingin dilatih</div>`;
+            DICTIONARY_GROUPS.forEach(group => {
+              const items = (TACTILE_DICTIONARY[group.key] || []);
+              if (!items.length) return;
+              html += `<div class="mt-4 mb-2 font-semibold text-stone-200">${group.label}</div><div class="flex flex-wrap gap-2 mb-2">`;
+              items.forEach(item => {
+                const word = item.word;
+                const active = selectedWords.includes(word) ? 'bg-stone-700 text-white' : 'bg-stone-800 text-stone-300';
+                html += `<button type="button" class="px-4 py-2 rounded-xl font-bold text-base focus:outline-none ${active}" data-word="${word}">${word}</button>`;
+              });
+              html += `</div>`;
+            });
+            html += `<div class="mt-6 mb-2 font-semibold text-stone-200">Tambah Kata Custom</div>
+              <div class="flex gap-2 mb-4"><input id="customWordInput" type="text" class="flex-1 px-3 py-2 rounded-lg bg-stone-800 text-white border border-stone-700 focus:outline-none" placeholder="Ketik kata..." maxlength="20"><button id="addCustomWordBtn" class="px-4 py-2 rounded-xl bg-stone-700 text-white font-bold">Add</button></div>`;
+            html += `<button id="startTrainingBtn" class="w-full py-3 rounded-xl bg-stone-700 text-stone-400 font-bold text-lg mt-2" disabled>Mulai Training (0 kata)</button>`;
+            html += `</div>`;
+            setup.innerHTML = html;
+            // Add listeners
+            setup.querySelectorAll('button[data-word]').forEach(btn => {
+              btn.onclick = function() {
+                const w = btn.getAttribute('data-word');
+                if (selectedWords.includes(w)) {
+                  selectedWords = selectedWords.filter(x => x !== w);
+                } else {
+                  selectedWords.push(w);
+                }
+                renderTrainingSetup();
+              };
+            });
+            setup.querySelector('#addCustomWordBtn').onclick = function() {
+              const inp = setup.querySelector('#customWordInput');
+              const val = (inp.value || '').trim().toUpperCase();
+              if (val && !selectedWords.includes(val)) {
+                selectedWords.push(val);
+                inp.value = '';
+                renderTrainingSetup();
+              }
+            };
+            const startBtn = setup.querySelector('#startTrainingBtn');
+            if (selectedWords.length > 0) {
+              startBtn.disabled = false;
+              startBtn.classList.remove('text-stone-400','bg-stone-700');
+              startBtn.classList.add('text-white','bg-emerald-700','hover:bg-emerald-800');
+              startBtn.textContent = `Mulai Training (${selectedWords.length} kata)`;
+            } else {
+              startBtn.disabled = true;
+              startBtn.classList.add('text-stone-400','bg-stone-700');
+              startBtn.classList.remove('text-white','bg-emerald-700','hover:bg-emerald-800');
+              startBtn.textContent = 'Mulai Training (0 kata)';
+            }
+            startBtn.onclick = function() {
+              if (selectedWords.length > 0) {
+                setup.style.display = 'none';
+                startTraining(selectedWords);
+              }
+            };
+          }
       const content = document.getElementById('trainingContent');
       if (!content) return;
       if (trainingState.current >= trainingState.words.length) {
@@ -201,7 +285,8 @@
       return arr;
     }
     document.addEventListener('DOMContentLoaded', function () {
-      startTraining();
+      document.getElementById('trainingContent').innerHTML = '';
+      renderTrainingSetup();
     });
   </script>
 </body>
