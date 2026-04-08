@@ -122,33 +122,67 @@
       }, 5000);
     }
 
+    function handleInputEnd() {
+      if (!inputStartTime) return;
+
+      const duration = Date.now() - inputStartTime;
+
+      if (duration < DOT) {
+        morseSequence += '.';
+      } else if (duration < DASH) {
+        morseSequence += '-';
+      } else if (duration < LETTER_PAUSE) {
+        messageInput.value += ' ';
+        morseSequence = '';
+      }
+
+      inputStartTime = null;
+
+      console.log('Current Morse:', morseSequence);
+
+      resetCharTimer();
+      resetSendTimer();
+    }
+
     if (morseInputBtn) {
       morseInputBtn.addEventListener('mousedown', () => {
         inputStartTime = Date.now();
       });
 
       morseInputBtn.addEventListener('mouseup', () => {
-        if (!inputStartTime) return;
+        // if (!inputStartTime) return;
 
-        const duration = Date.now() - inputStartTime;
+        // const duration = Date.now() - inputStartTime;
 
-        if (duration < DOT) {
-          morseSequence += '.';
-        } else if (duration < DASH) {
-          morseSequence += '-';
-        } else {
-          // ␣ SPACE detected → instant apply
-          messageInput.value += ' ';
-          morseSequence = '';
-          console.log('Space added');
-        }
+        // if (duration < DOT) {
+        //   morseSequence += '.';
+        // } else if (duration < DASH) {
+        //   morseSequence += '-';
+        // } else {
+        //   // ␣ SPACE detected → instant apply
+        //   messageInput.value += ' ';
+        //   morseSequence = '';
+        //   console.log('Space added');
+        // }
 
-        inputStartTime = null;
+        // inputStartTime = null;
 
-        console.log('Current Morse:', morseSequence);
+        // console.log('Current Morse:', morseSequence);
 
-        resetCharTimer(); // 2s letter convert
-        resetSendTimer(); // 5s send message
+        // resetCharTimer(); // 2s letter convert
+        // resetSendTimer(); // 5s send message
+        handleInputEnd();
+      });
+
+      //mobile
+      morseInputBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // ⚠️ prevents ghost clicks
+        inputStartTime = Date.now();
+      });
+
+      morseInputBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        handleInputEnd();
       });
     }
 
