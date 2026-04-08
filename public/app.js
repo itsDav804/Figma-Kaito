@@ -26,8 +26,8 @@
 
     // Temporary Morse storage
     window.tempMorse = '';
-  function addMorse(char) { window.tempMorse += char === '•' ? '.' : '-'; }
-  function deleteMorse() { window.tempMorse = window.tempMorse.slice(0, -1); }
+    function addMorse(char) { window.tempMorse += char === '•' ? '.' : '-'; }
+    function deleteMorse() { window.tempMorse = window.tempMorse.slice(0, -1); }
 
     var morseInput = '';
     var messageInput = document.getElementById('messageInput');
@@ -43,70 +43,181 @@
       }
     }
 
-    document.getElementById('morseDotBtn').addEventListener('click', function () {
-      morseInput += '.';
-      addMorse('•');
-      syncMorseUI();
-    });
+    // document.getElementById('morseDotBtn').addEventListener('click', function () {
+    //   morseInput += '.';
+    //   addMorse('•');
+    //   syncMorseUI();
+    // });
 
-    document.getElementById('morseDashBtn').addEventListener('click', function () {
-      morseInput += '-';
-      addMorse('—');
-      syncMorseUI();
-    });
+    // document.getElementById('morseDashBtn').addEventListener('click', function () {
+    //   morseInput += '-';
+    //   addMorse('—');
+    //   syncMorseUI();
+    // });
 
-    document.getElementById('morseDeleteBtn').addEventListener('click', function () {
-      morseInput = morseInput.slice(0, -1);
-      deleteMorse();
-      syncMorseUI();
-    });
+    // document.getElementById('morseDeleteBtn').addEventListener('click', function () {
+    //   morseInput = morseInput.slice(0, -1);
+    //   deleteMorse();
+    //   syncMorseUI();
+    // });
     
-    document.getElementById('morseAddCharBtn').addEventListener('click', function () {
-      const ch = REVERSE_MORSE_MAP[morseInput];
-      if (ch !== undefined) {
-        messageInput.value += ch;
-        if (charCount) charCount.textContent = messageInput.value.length;
-        document.getElementById('sendBtn').disabled = !messageInput.value.trim();
-        if (typeof updateSendPreview === 'function') updateSendPreview();
-      } else if (messageInput.value.length <= 0 && window.tempMorse && ch === undefined) {
-        // Check for tactile dictionary conversion in Morse mode
-        var word = MORSE_TO_WORD[window.tempMorse];
-        if (word) {
-          messageInput.value = word;
-          window.tempMorse = '';
+    // document.getElementById('morseAddCharBtn').addEventListener('click', function () {
+    //   const ch = REVERSE_MORSE_MAP[morseInput];
+    //   if (ch !== undefined) {
+    //     messageInput.value += ch;
+    //     if (charCount) charCount.textContent = messageInput.value.length;
+    //     document.getElementById('sendBtn').disabled = !messageInput.value.trim();
+    //     if (typeof updateSendPreview === 'function') updateSendPreview();
+    //   } else if (messageInput.value.length <= 0 && window.tempMorse && ch === undefined) {
+    //     // Check for tactile dictionary conversion in Morse mode
+    //     var word = MORSE_TO_WORD[window.tempMorse];
+    //     if (word) {
+    //       messageInput.value = word;
+    //       window.tempMorse = '';
+    //     }
+    //   }
+    //   morseInput = '';
+    //   syncMorseUI();
+    //   updatePatternPreviewUI();
+    // });
+
+    let morseSequence = '';
+    let inputStartTime = null;
+
+    let charTimer = null;   // 2s → convert
+    let sendTimer = null;   // 5s → send
+
+    const DOT = 300;
+    const DASH = 500;
+
+    // const messageInput = document.getElementById('messageInput');
+    const morseInputBtn = document.getElementById('morseInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    function resetCharTimer() {
+      if (charTimer) clearTimeout(charTimer);
+
+      charTimer = setTimeout(() => {
+        if (!morseSequence.trim()) return;
+
+        const letter = REVERSE_MORSE_MAP[morseSequence.trim()] || '?';
+        messageInput.value += letter;
+
+        console.log('Converted:', morseSequence, '→', letter);
+
+        morseSequence = '';
+      }, 2000);
+    }
+
+    function resetSendTimer() {
+      if (sendTimer) clearTimeout(sendTimer);
+
+      sendTimer = setTimeout(() => {
+        if (messageInput.value.trim()) {
+          console.log('Sending message:', messageInput.value);
+
+          sendBtn.disabled = false; // ✅ enable first
+          sendBtn.click();
         }
+      }, 5000);
+    }
+
+    function handleInputEnd() {
+      if (!inputStartTime) return;
+
+      const duration = Date.now() - inputStartTime;
+
+      if (duration < DOT) {
+        morseSequence += '.';
+      } else if (duration < DASH) {
+        morseSequence += '-';
+      } else if (duration < LETTER_PAUSE) {
+        messageInput.value += ' ';
+        morseSequence = '';
       }
-      morseInput = '';
-      syncMorseUI();
-      updatePatternPreviewUI();
-    });
+
+      inputStartTime = null;
+
+      console.log('Current Morse:', morseSequence);
+
+      resetCharTimer();
+      resetSendTimer();
+    }
+
+    if (morseInputBtn) {
+      morseInputBtn.addEventListener('mousedown', () => {
+        inputStartTime = Date.now();
+      });
+
+      morseInputBtn.addEventListener('mouseup', () => {
+        // if (!inputStartTime) return;
+
+        // const duration = Date.now() - inputStartTime;
+
+        // if (duration < DOT) {
+        //   morseSequence += '.';
+        // } else if (duration < DASH) {
+        //   morseSequence += '-';
+        // } else {
+        //   // ␣ SPACE detected → instant apply
+        //   messageInput.value += ' ';
+        //   morseSequence = '';
+        //   console.log('Space added');
+        // }
+
+        // inputStartTime = null;
+
+        // console.log('Current Morse:', morseSequence);
+
+        // resetCharTimer(); // 2s letter convert
+        // resetSendTimer(); // 5s send message
+        handleInputEnd();
+      });
+
+      //mobile
+      morseInputBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // ⚠️ prevents ghost clicks
+        inputStartTime = Date.now();
+      });
+
+      morseInputBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        handleInputEnd();
+      });
+    }
 
     // Synchronize: when textarea changes, clear Morse input
     messageInput.addEventListener('input', function () {
       morseInput = '';
       syncMorseUI();
     });
-    document.getElementById('morseSpaceBtn').addEventListener('click', function () {
-      messageInput.value = messageInput.value + ' ';
-      if (charCount) charCount.textContent = messageInput.value.length;
-      document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
-      updateSendPreview();
-      updatePatternPreviewUI();
-    });
-    document.getElementById('morseBackspaceBtn').addEventListener('click', function () {
-      if (messageInput.value.length > 0) {
-        messageInput.value = messageInput.value.slice(0, -1);
-        syncMorseUI();
-        updatePatternPreviewUI();
-      }
-    });
-    document.getElementById('morseClearBtn').addEventListener('click', function () {
-      messageInput.value = '';
-      syncMorseUI();
-      updatePatternPreviewUI();
-    });
+
+    // document.getElementById('morseSpaceBtn').addEventListener('click', function () {
+    //   messageInput.value = messageInput.value + ' ';
+    //   if (charCount) charCount.textContent = messageInput.value.length;
+    //   document.getElementById('sendBtn').disabled = !isConnected() || !messageInput.value.trim();
+    //   updateSendPreview();
+    //   updatePatternPreviewUI();
+    // });
+
+    // document.getElementById('morseBackspaceBtn').addEventListener('click', function () {
+    //   if (messageInput.value.length > 0) {
+    //     messageInput.value = messageInput.value.slice(0, -1);
+    //     syncMorseUI();
+    //     updatePatternPreviewUI();
+    //   }
+      
+    // });
+
+    // document.getElementById('morseClearBtn').addEventListener('click', function () {
+    //   messageInput.value = '';
+    //   syncMorseUI();
+    //   updatePatternPreviewUI();
+    // });
+
     syncMorseUI();
   });
+
   // --- Morse encoder ---
   // Morse code map (A-Z, 0-9)
   const MORSE_MAP = {
