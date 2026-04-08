@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-  <link rel=""stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css">
   <!-- Fallback: tetap kelihatan kalau Tailwind belum jalan -->
   <style>
     body { background: #d4f7d4; color: #1c1917; margin: 0; min-height: 100vh; font-family: 'Figtree', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -380,39 +380,6 @@
         })
       } else {
         console.error('Toggle button not found');
-      }
-    });
-  </script>
-  <script>
-    // Morse input logic
-    document.addEventListener('DOMContentLoaded', function() {
-      const morseInputBtn = document.getElementById('morseInput');
-      let morseSequence = '';
-      let inputStartTime = null;
-      const DOT = 300;
-      const DASH = 500;
-      const LETTER_PAUSE = 800;
-      const lastInputTime = null;
-
-      if (morseInputBtn) {
-        morseInputBtn.addEventListener('mousedown', function() {
-          inputStartTime = Date.now();
-        });
-        morseInputBtn.addEventListener('mouseup', function() {
-          if (!inputStartTime) return;
-          const duration = Date.now() - inputStartTime;
-          if (duration < DOT) {
-            morseSequence += '.';
-          } else if (duration < DASH) {
-            morseSequence += '-';
-          } else if (duration < LETTER_PAUSE) {
-            morseSequence += ' ';
-          } else {
-            
-          }
-          inputStartTime = null;
-          console.log('Current Morse Sequence:', morseSequence);
-        });
       }
     });
   </script>
