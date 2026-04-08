@@ -110,9 +110,9 @@
               <p id="patternPreview" class="mt-1 text-sm font-mono text-emerald-700 dark:text-emerald-400 break-all whitespace-pre-wrap"></p>
             </div>
           </div>
-          <!-- Input Braille 6 titik (keyboard on-screen) - always visible -->
+          <!-- Input Morse -->
           <div id="morseInputSection" class="pt-3 hidden">
-            <div class="flex flex-col items-center gap-2">
+            <!-- <div class="flex flex-col items-center gap-2">
               <div class="flex gap-2 mb-2">
                 <button type="button" id="morseDotBtn" class="min-h-[100px] min-w-[100px] rounded-full border-4 border-emerald-400 dark:border-emerald-700 bg-stone-100 dark:bg-stone-700 text-emerald-700 dark:text-emerald-300 font-bold text-5xl flex items-center justify-center" aria-label="Dot (.)">•</button>
                 <button type="button" id="morseDashBtn" class="min-h-[100px] min-w-[100px] rounded-full border-4 border-amber-400 dark:border-amber-700 bg-stone-100 dark:bg-stone-700 text-amber-700 dark:text-amber-300 font-bold text-5xl flex items-center justify-center" aria-label="Dash (-)">—</button>
@@ -132,7 +132,8 @@
                 <button type="button" id="morseBackspaceBtn" class="min-h-[44px] py-2.5 px-4 rounded-xl border-2 border-red-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-400 font-semibold text-sm hover:bg-yellow-50 dark:hover:bg-yellow-900/20 active:scale-[1] transition" aria-label="Hapus karakter terakhir">Hapus</button>
                 <button type="button" id="morseClearBtn" class="min-h-[44px] py-2.5 px-4 rounded-xl border-2 border-red-400 dark:border-red-500 text-red-700 dark:text-red-300 font-semibold text-sm hover:bg-red-100 dark:hover:bg-red-700 active:scale-[1] transition" aria-label="Clear input">Clear</button>
               </div>
-            </div>
+            </div> -->
+            <button type="button" id="morseInput" class="w-full min-h-[500px] py-4 rounded-2xl bg-stone-700 dark:bg-stone-600 text-white font-bold text-xl hover:bg-stone-600 dark:hover:bg-stone-500 active:scale-[1] transition" aria-label="Mulai input Morse"></button>
           </div>
           <div id="progressSection" class="hidden flex items-center gap-2 py-2 text-amber-700 dark:text-amber-400 text-sm">
             <span class="w-4 h-4 border-2 border-amber-300 dark:border-amber-600 border-t-amber-600 dark:border-t-amber-400 rounded-full animate-spin"></span>
@@ -365,6 +366,7 @@
       const toggleBtn = document.getElementById('togglebtn');
       const Morse = document.getElementById('morseInputSection');
       const messageInput = document.getElementById('messageInput');
+      const sendBtn = document.getElementById('sendBtn');
       let isClicked = false;
 
       if (toggleBtn) {
@@ -372,11 +374,45 @@
           isClicked = !isClicked;
           toggleBtn.textContent = isClicked ? 'Morse' : 'Keyboard';
           Morse.classList.toggle('hidden', !isClicked);
+          sendBtn.classList.toggle('hidden', isClicked);
           messageInput.toggleAttribute('disabled', isClicked);
           messageInput.placeholder = isClicked ? 'Gunakan tombol di bawah untuk input Morse…' : 'Ketik di sini… (Ctrl+Enter untuk kirim)';
         })
       } else {
         console.error('Toggle button not found');
+      }
+    });
+  </script>
+  <script>
+    // Morse input logic
+    document.addEventListener('DOMContentLoaded', function() {
+      const morseInputBtn = document.getElementById('morseInput');
+      let morseSequence = '';
+      let inputStartTime = null;
+      const DOT = 300;
+      const DASH = 500;
+      const LETTER_PAUSE = 800;
+      const lastInputTime = null;
+
+      if (morseInputBtn) {
+        morseInputBtn.addEventListener('mousedown', function() {
+          inputStartTime = Date.now();
+        });
+        morseInputBtn.addEventListener('mouseup', function() {
+          if (!inputStartTime) return;
+          const duration = Date.now() - inputStartTime;
+          if (duration < DOT) {
+            morseSequence += '.';
+          } else if (duration < DASH) {
+            morseSequence += '-';
+          } else if (duration < LETTER_PAUSE) {
+            morseSequence += ' ';
+          } else {
+            
+          }
+          inputStartTime = null;
+          console.log('Current Morse Sequence:', morseSequence);
+        });
       }
     });
   </script>
