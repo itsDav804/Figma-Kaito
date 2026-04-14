@@ -88,7 +88,7 @@
     let sendTimer = null;   // 5s → send
 
     const DOT = 300;
-    const DASH = 500;
+    const DASH = 750;
 
     // const messageInput = document.getElementById('messageInput');
     const morseInputBtn = document.getElementById('morseInput');
@@ -127,13 +127,14 @@
 
       const duration = Date.now() - inputStartTime;
 
-      if (duration < DOT) {
+      if (duration <= DOT) {
         morseSequence += '.';
-      } else if (duration < DASH) {
+      } else if (duration <= DASH) {
         morseSequence += '-';
-      } else if (duration < LETTER_PAUSE) {
+      } else if (morseSequence !== null && duration > DASH) {
         messageInput.value += ' ';
         morseSequence = '';
+        console.log('space added');
       }
 
       inputStartTime = null;
